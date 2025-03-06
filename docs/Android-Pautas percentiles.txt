@@ -1,0 +1,135 @@
+
+public class Pauta {
+
+    private int id;
+    private int numero;
+    private String name;
+    private Area area;
+    private BigDecimal p75;
+    private BigDecimal p90;
+    private TipoPauta tipoPauta;
+    private String rangoAprobacion;
+
+
+    public String toString() {
+        return String.format(new Locale("es","AR"),"Pauta id: %d. #%d %s %s P75: %s P90: %s Tipo: %s R.Ap: %s",
+                id, numero, name, area.getName(), p75.toString(), p90.toString(), tipoPauta.toString(),rangoAprobacion);
+    }
+
+    public Pauta(int numero, String nombre, Area area, String p75, String p90, TipoPauta tipoPauta, String rangoAprobacion){
+        this.id = numero;
+        this.numero = numero;
+        this.name = nombre;
+        this.area = area;
+        this.rangoAprobacion = rangoAprobacion;
+        this.p75 = new BigDecimal(p75);
+        this.p90 = new BigDecimal(p90);
+        this.tipoPauta = tipoPauta;
+    }
+
+    public boolean isPautaA(BigDecimal age){
+        return this.p90.compareTo(age) < 0;
+    }
+
+    public boolean isPautaB(BigDecimal age){
+        return this.p75.compareTo(age) >= 0 && this.p90.compareTo(age) <= 0;
+    }
+
+    /* Getters and Setters*/
+
+}
+
+====================================================================================================
+
+
+private void populateRepo(AreasRepository areasRepo, TipoPautasRepository tipoPautasRepo){
+        //Personal Social
+        pautas.add(new Pauta(1,"Comunicación con el observador",areasRepo.findByName("Personal Social"),"0.12","0.27",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(2,"Sonrisa social",areasRepo.findByName("Personal Social"),"0.12","0.16",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(3,"Actitud frente al espejo",areasRepo.findByName("Personal Social"),"0.39","0.50",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(4,"Se resiste a que le quiten un juguete",areasRepo.findByName("Personal Social"),"0.55","0.68",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(5,"Juega a las escondidas",areasRepo.findByName("Personal Social"),"0.55","0.68",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(6,"Busca objeto",areasRepo.findByName("Personal Social"),"0.76","0.90",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(7,"Da un objeto",areasRepo.findByName("Personal Social"),"1.08","1.46",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(8,"Juego simbólico",areasRepo.findByName("Personal Social"),"1.16","1.52",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(9,"Come solo",areasRepo.findByName("Personal Social"),"1.34","1.44",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(10,"Ayuda en tareas del hogar",areasRepo.findByName("Personal Social"),"1.25","1.49",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(11,"Acude al llamado del observador",areasRepo.findByName("Personal Social"),"1.58","2.35",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(12,"Imita tareas del hogar",areasRepo.findByName("Personal Social"),"1.29","1.61",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(13,"Se quita ropa o zapatos",areasRepo.findByName("Personal Social"),"2.42","2.81",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(14,"Se pone ropa o zapatos",areasRepo.findByName("Personal Social"),"2.63","3.01",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(15,"Control de esfínteres diurno",areasRepo.findByName("Personal Social"),"2.39","2.71",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(16,"Arma rompecabezas",areasRepo.findByName("Personal Social"),"2.74","3.17",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(17,"Aparea colores",areasRepo.findByName("Personal Social"),"3.62","3.80",tipoPautasRepo.findByName("Prueba"),"1-4"));
+        pautas.add(new Pauta(18,"Junta dibujos semejantes",areasRepo.findByName("Personal Social"),"4.74","5.74",tipoPautasRepo.findByName("Prueba"),""));
+
+
+        //Motor Fino
+        pautas.add(new Pauta(19,"Seguimiento visual hasta la línea media",areasRepo.findByName("Motor Fino"),"0.18","0.21",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(20,"Manos semiabiertas",areasRepo.findByName("Motor Fino"),"0.17","0.24",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(21,"Mira su mano",areasRepo.findByName("Motor Fino"),"0.26","0.33",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(22,"Junta manos",areasRepo.findByName("Motor Fino"),"0.34","0.42",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(23,"Pasa un cubo de mano mirándolo",areasRepo.findByName("Motor Fino"),"0.39","0.45",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(24,"Prensión cúbito palmar",areasRepo.findByName("Motor Fino"),"0.51","0.58",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(25,"Prensión pinza superior",areasRepo.findByName("Motor Fino"),"0.87","0.99",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(26,"Vierte / pasa de botella",areasRepo.findByName("Motor Fino"),"1.27","1.61",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(27,"Introduce / pasa en botella",areasRepo.findByName("Motor Fino"),"1.21","1.46",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(28,"Garabatea",areasRepo.findByName("Motor Fino"),"1.26","1.60",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(29,"Torre de 4 cubos",areasRepo.findByName("Motor Fino"),"1.66","1.98",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(30,"Torre de 8 cubos",areasRepo.findByName("Motor Fino"),"2.61","3.12",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(31,"Corrige torre",areasRepo.findByName("Motor Fino"),"3.14","3.82",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(32,"Imita puente",areasRepo.findByName("Motor Fino"),"3.07","3.66",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(33,"Dibuja persona en 3 partes",areasRepo.findByName("Motor Fino"),"4.07","4.80",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(34,"Copia cruz",areasRepo.findByName("Motor Fino"),"4.22","4.93",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(35,"Dobla un papel en diagonal",areasRepo.findByName("Motor Fino"),"4.48","4.92",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(36,"Dibuja persona en 6 partes",areasRepo.findByName("Motor Fino"),"4.90","5.72",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(37,"Copia un triángulo",areasRepo.findByName("Motor Fino"),"5.53","5.87",tipoPautasRepo.findByName("Prueba"),""));
+
+        //Lenguaje
+        pautas.add(new Pauta(38,"Cocleo palpebral",areasRepo.findByName("Lenguaje"),"0.04","0.04",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(39,"Busca con la mirada a la madre",areasRepo.findByName("Lenguaje"),"0.47","0.49",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(40,"Respuesta al no",areasRepo.findByName("Lenguaje"),"0.59","0.82",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(41,"Silabeo da-da-da ta-ta-ta",areasRepo.findByName("Lenguaje"),"0.60","0.70",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(42,"Silabeo pa-pama-ma, no específico",areasRepo.findByName("Lenguaje"),"0.69","0.80",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(43,"papá-mamá específico",areasRepo.findByName("Lenguaje"),"1.36","1.70",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(44,"Palabra frase",areasRepo.findByName("Lenguaje"),"1.41","1.89",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(45,"Señala 2 figuras",areasRepo.findByName("Lenguaje"),"1.81","2.25",tipoPautasRepo.findByName("Prueba"),"2-4"));
+        pautas.add(new Pauta(46,"Tararea en presencia de terceros",areasRepo.findByName("Lenguaje"),"2.56","2.84",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(47,"Nombra 2 figuras",areasRepo.findByName("Lenguaje"),"2.26","2.39",tipoPautasRepo.findByName("Prueba"),"2-4"));
+        pautas.add(new Pauta(48,"Frase (sustantivo y verbo)",areasRepo.findByName("Lenguaje"),"2.16","2.41",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(49,"Dice su nombre completo",areasRepo.findByName("Lenguaje"),"2.81","3.61",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(50,"Frases completas",areasRepo.findByName("Lenguaje"),"2.63","3.13",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(51,"Comprende preposiciones",areasRepo.findByName("Lenguaje"),"3.44","4.49",tipoPautasRepo.findByName("Prueba"),"3-4"));
+        pautas.add(new Pauta(52,"Cumple 2 indicaciones consecutivas",areasRepo.findByName("Lenguaje"),"3.64","4.61",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(53,"Analogías opuestas",areasRepo.findByName("Lenguaje"),"3.60","4.28",tipoPautasRepo.findByName("Prueba"),"2-3"));
+        pautas.add(new Pauta(54,"Uso de 2 objetos",areasRepo.findByName("Lenguaje"),"3.81","4.91",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(55,"Reconoce 3 colores",areasRepo.findByName("Lenguaje"),"4.41","4.70",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(56,"Sabe por qué es de día o de noche",areasRepo.findByName("Lenguaje"),"4.69","5.44",tipoPautasRepo.findByName("Prueba"),""));
+
+        //Motor Grueso
+        pautas.add(new Pauta(57,"Sostén cefálico",areasRepo.findByName("Motor Grueso"),"0.13","0.21",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(58,"Levanta cabeza 45º",areasRepo.findByName("Motor Grueso"),"0.20","0.24",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(59,"Posición en línea media",areasRepo.findByName("Motor Grueso"),"0.21","0.29",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(60,"Desaparición del Moro completo simétrico",areasRepo.findByName("Motor Grueso"),"0.22","0.23",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(61,"Palanca",areasRepo.findByName("Motor Grueso"),"0.35","0.41",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(62,"Trípode",areasRepo.findByName("Motor Grueso"),"0.43","0.49",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(63,"Pasa de posición dorsal a lateral",areasRepo.findByName("Motor Grueso"),"0.46","0.48",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(64,"Sentado alcanza objeto",areasRepo.findByName("Motor Grueso"),"0.62","0.75",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(65,"Sentado sin sostén",areasRepo.findByName("Motor Grueso"),"0.59","0.65",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(66,"Logra pararse",areasRepo.findByName("Motor Grueso"),"0.89","0.95",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(67,"Camina sujeto a muebles",areasRepo.findByName("Motor Grueso"),"0.88","0.98",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(68,"Camina de la mano",areasRepo.findByName("Motor Grueso"),"0.94","1.04",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(69,"Camina solo",areasRepo.findByName("Motor Grueso"),"1.13","1.25",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(70,"Se agacha y se levanta sin sostén",areasRepo.findByName("Motor Grueso"),"1.12","1.30",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(71,"Patea pelota",areasRepo.findByName("Motor Grueso"),"1.28","1.78",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(72,"Sube a una silla o sillón sin ayuda",areasRepo.findByName("Motor Grueso"),"1.35","1.56",tipoPautasRepo.findByName("Pregunta"),""));
+        pautas.add(new Pauta(73,"Lanza pelota al examinador",areasRepo.findByName("Motor Grueso"),"1.85","2.42",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(74,"Salta con ambos pies",areasRepo.findByName("Motor Grueso"),"2.48","2.83",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(75,"Se para en un pie 5''",areasRepo.findByName("Motor Grueso"),"3.08","3.80",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(76,"Salto amplio",areasRepo.findByName("Motor Grueso"),"3.03","3.81",tipoPautasRepo.findByName("Prueba"),""));
+        pautas.add(new Pauta(77,"Salta en un pie",areasRepo.findByName("Motor Grueso"),"3.95","4.69",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(78,"Camina talón punta",areasRepo.findByName("Motor Grueso"),"4.36","5.11",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+        pautas.add(new Pauta(79,"Retrocede talón punta",areasRepo.findByName("Motor Grueso"),"5.28","5.95",tipoPautasRepo.findByName("Prueba Demostrada"),""));
+
+
+    }
