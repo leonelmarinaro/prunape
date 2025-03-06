@@ -68,6 +68,21 @@ class Pauta:
         """
         return self.p75 <= age <= self.p90
 
+    def should_evaluate(self, age: Decimal) -> bool:
+        """
+        Determina si esta pauta debería evaluarse para un niño de la edad dada.
+        """
+        # No evaluar pautas demasiado básicas (más del 90% de niños ya las dominan hace tiempo)
+        if self.p90 < (age - Decimal("1.0")):
+            return False
+
+        # No evaluar pautas demasiado avanzadas (menos del 75% de niños de mayor edad las logran)
+        if self.p75 > (age + Decimal("0.5")):
+            return False
+
+        # Esta pauta está en el rango adecuado para evaluar
+        return True
+
 
 class PautasRepository:
     """Repository to manage all Pautas (developmental milestones)"""
