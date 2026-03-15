@@ -3,7 +3,13 @@ from typing import List, Dict, Optional
 import locale
 
 # Set locale for formatting
-locale.setlocale(locale.LC_ALL, "es_ES")
+try:
+    locale.setlocale(locale.LC_ALL, "es_ES")
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_ALL, "es_ES.UTF-8")
+    except locale.Error:
+        pass
 
 
 class Area:
