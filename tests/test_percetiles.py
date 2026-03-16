@@ -84,3 +84,10 @@ def test_area_class():
 def test_tipo_pauta_class():
     tipo = TipoPauta(1, "Prueba")
     assert str(tipo) == "Prueba"
+
+
+def test_pauta_str(repo):
+    p = repo.find_by_id(1)
+    s = str(p)
+    assert "1" in s
+    assert "Comunicación" in s

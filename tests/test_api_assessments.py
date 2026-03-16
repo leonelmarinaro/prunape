@@ -158,3 +158,17 @@ def test_delete_assessment(client, sample_patient_data):
 def test_delete_assessment_not_found(client):
     response = client.delete("/api/assessments/9999")
     assert response.status_code == 404
+
+
+def test_create_assessment_invalid_pauta(client, sample_patient_data):
+    sample_patient_data["birth_date"] = "2022-01-01"
+    patient = client.post("/api/patients", json=sample_patient_data).json()
+    response = client.post(
+        "/api/assessments",
+        json={
+            "patient_id": patient["id"],
+            "assessment_date": "2025-01-01",
+            "items": [{"pauta_id": 9999, "passed": True}],
+        },
+    )
+    assert response.status_code == 400

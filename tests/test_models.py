@@ -74,6 +74,18 @@ def test_patient_assessment_cascade(db):
     assert remaining is None
 
 
+def test_get_db_yields_session():
+    from backend.database import get_db
+
+    gen = get_db()
+    db = next(gen)
+    assert db is not None
+    try:
+        next(gen)
+    except StopIteration:
+        pass
+
+
 def test_create_assessment_item(db):
     patient = models.Patient(name="Test", birth_date=date(2023, 1, 1))
     db.add(patient)
