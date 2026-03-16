@@ -1,0 +1,33 @@
+[project]
+name = "prunape"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "sqlalchemy>=2.0.0",
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["backend"]
+omit = ["backend/assessment.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except locale.Error:",
+    "if __name__ == .__main__.:",
+]
