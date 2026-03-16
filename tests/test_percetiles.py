@@ -91,3 +91,9 @@ def test_pauta_str(repo):
     s = str(p)
     assert "1" in s
     assert "Comunicación" in s
+
+
+def test_find_by_area(repo):
+    pautas = repo.find_by_area("Personal Social")
+    assert len(pautas) == 18
+    assert all(p.area.name == "Personal Social" for p in pautas)

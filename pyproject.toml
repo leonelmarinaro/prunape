@@ -24,3 +24,10 @@ testpaths = ["tests"]
 [tool.coverage.run]
 source = ["backend"]
 omit = ["backend/assessment.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except locale.Error:",
+    "if __name__ == .__main__.:",
+]
