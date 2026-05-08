@@ -4,10 +4,22 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AssessmentResultPage from '../AssessmentResultPage'
 import * as assessmentsApi from '../../api/assessments'
-import { makeAssessment, makePauta, makeAssessmentItem } from '../../test/mocks'
+import * as patientsApi from '../../api/patients'
+import { makeAssessment, makePauta, makeAssessmentItem, makePatient } from '../../test/mocks'
 import { QueryWrapper } from '../../test/testUtils'
 
 vi.mock('../../api/assessments')
+vi.mock('../../api/patients')
+
+// Mock @react-pdf/renderer para evitar problemas en jsdom
+vi.mock('@react-pdf/renderer', () => ({
+  Document: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Page: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Text: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  View: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  StyleSheet: { create: (s: unknown) => s },
+  pdf: () => ({ toBlob: () => Promise.resolve(new Blob()) }),
+}))
 
 function renderPage(id = '1') {
   return render(
@@ -19,6 +31,14 @@ function renderPage(id = '1') {
       </MemoryRouter>
     </QueryWrapper>
   )
+}
+
+function mockPatientReturn(overrides = {}) {
+  vi.mocked(patientsApi.usePatient).mockReturnValue({
+    data: makePatient(),
+    isLoading: false,
+    ...overrides,
+  } as ReturnType<typeof patientsApi.usePatient>)
 }
 
 beforeEach(() => {
@@ -35,6 +55,10 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+    } as unknown as ReturnType<typeof patientsApi.usePatient>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
@@ -49,6 +73,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -67,11 +92,14 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('PASA')).toBeInTheDocument()
+      // El banner grande y ResultSummary muestran "PASA"
+      const elements = screen.getAllByText('PASA')
+      expect(elements.length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -86,11 +114,14 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('NO PASA')).toBeInTheDocument()
+      // El banner grande y ResultSummary ambos muestran "NO PASA"
+      const elements = screen.getAllByText('NO PASA')
+      expect(elements.length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -104,6 +135,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -122,6 +154,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -141,6 +174,7 @@ describe('AssessmentResultPage', () => {
       data: pautas,
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -159,6 +193,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -177,6 +212,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -196,6 +232,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -213,6 +250,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage('42')
 
@@ -235,6 +273,7 @@ describe('AssessmentResultPage', () => {
       data: [],
       isLoading: false,
     } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
 
     renderPage()
 
@@ -242,5 +281,24 @@ describe('AssessmentResultPage', () => {
     await user.click(screen.getByText('Imprimir'))
 
     expect(printMock).toHaveBeenCalled()
+  })
+
+  it('muestra botón Descargar PDF cuando hay paciente', async () => {
+    const assessment = makeAssessment()
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
+    mockPatientReturn()
+
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Descargar PDF')).toBeInTheDocument()
+    })
   })
 })
