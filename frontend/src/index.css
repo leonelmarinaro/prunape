@@ -2,26 +2,25 @@
 
 @layer base {
   :root {
-    --primary: oklch(0.55 0.2 240);
-    --primary-foreground: oklch(0.98 0 0);
-    --success: oklch(0.55 0.18 145);
-    --success-foreground: oklch(0.98 0 0);
-    --danger: oklch(0.55 0.22 25);
-    --danger-foreground: oklch(0.98 0 0);
-    --warning: oklch(0.7 0.18 80);
-    --warning-foreground: oklch(0.2 0 0);
-    --muted: oklch(0.96 0 0);
-    --muted-foreground: oklch(0.45 0 0);
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.13 0 0);
-    --border: oklch(0.9 0 0);
-    --radius: 0.5rem;
-    /* Color aliases for shadcn compatibility */
-    --color-primary: var(--primary);
-    --color-success: var(--success);
-    --color-danger: var(--danger);
-    --color-warning: var(--warning);
-    --color-muted: var(--muted);
+    --primary:            #1e3a5f;
+    --primary-accent:     #2563eb;
+    --primary-foreground: #ffffff;
+    --success:            #16a34a;
+    --success-foreground: #ffffff;
+    --neutral:            #334155;
+    --neutral-foreground: #ffffff;
+    --background:         #f1f5f9;
+    --surface:            #ffffff;
+    --foreground:         #0f172a;
+    --muted:              #f8fafc;
+    --muted-foreground:   #64748b;
+    --border:             #e2e8f0;
+    --radius:             0.5rem;
+    /* Aliases para compatibilidad shadcn */
+    --color-primary:      var(--primary);
+    --color-success:      var(--success);
+    --color-neutral:      var(--neutral);
+    --color-muted:        var(--muted);
   }
 }
 
@@ -42,8 +41,8 @@
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 16px;
     line-height: 1.5;
-    color: #1f2937;
-    background: #f5f7fa;
+    color: var(--foreground);
+    background: var(--background);
     -webkit-font-smoothing: antialiased;
   }
 
