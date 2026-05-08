@@ -32,12 +32,12 @@ export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const patientId = id ? parseInt(id) : undefined
   const { data: patient, isLoading: loading } = usePatient(patientId)
+  const navigate = useNavigate()
 
   if (loading) return <p>Cargando...</p>
   if (!patient) return <p>Paciente no encontrado.</p>
 
   const age = calcAge(patient.birth_date)
-  const navigate = useNavigate()
 
   return (
     <div className="space-y-6">

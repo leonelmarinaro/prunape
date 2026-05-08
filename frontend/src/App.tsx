@@ -218,7 +218,7 @@ function App() {
         <AppShell />
       </SignedIn>
       <SignedOut>
-        <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa]">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
           <SignIn routing="hash" />
         </div>
       </SignedOut>
