@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react"
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom"
+import { BrowserRouter, Routes, Route, NavLink, useLocation, Link } from "react-router-dom"
 import { SignedIn, SignedOut, SignIn, UserButton, useAuth } from "@clerk/clerk-react"
 import { setAuthTokenGetter } from "./api/client"
 import { cn } from "@/lib/utils"
@@ -115,35 +115,78 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   )
 }
 
+function usePageLabel(): string {
+  const { pathname } = useLocation()
+  if (pathname === "/") return "Inicio"
+  if (pathname === "/patients/new") return "Nuevo Paciente"
+  if (/^\/patients\/\d+\/edit$/.test(pathname)) return "Editar Paciente"
+  if (/^\/patients\/\d+\/assess$/.test(pathname)) return "Nueva Evaluación"
+  if (/^\/assessments\/\d+$/.test(pathname)) return "Resultado"
+  if (/^\/patients\/\d+$/.test(pathname)) return "Ficha de Paciente"
+  if (pathname.startsWith("/patients")) return "Pacientes"
+  return "PRUNAPE"
+}
+
+function useNewAssessmentHref(): string {
+  const { pathname } = useLocation()
+  const match = pathname.match(/^\/patients\/(\d+)/)
+  if (match) return `/patients/${match[1]}/assess`
+  return "/patients"
+}
+
+function AppShellTopbar({ onMenuOpen }: { onMenuOpen: () => void }) {
+  const pageLabel = usePageLabel()
+  const newAssessmentHref = useNewAssessmentHref()
+
+  return (
+    <header className="sticky top-0 z-10 bg-white border-b border-[var(--border)] px-4 py-2.5 flex items-center gap-3">
+      {/* Hamburger mobile */}
+      <button
+        className="lg:hidden p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+        onClick={onMenuOpen}
+        aria-label="Abrir menú"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+        </svg>
+      </button>
+
+      {/* Breadcrumb — solo desktop */}
+      <nav aria-label="Ubicación" className="hidden lg:flex items-center gap-1.5 text-sm">
+        <span className="text-[var(--muted-foreground)]">PRUNAPE</span>
+        <span className="text-[var(--muted-foreground)]">/</span>
+        <span className="font-semibold text-[var(--primary)]">{pageLabel}</span>
+      </nav>
+
+      {/* Título mobile */}
+      <span className="font-semibold text-[var(--foreground)] lg:hidden">PRUNAPE</span>
+
+      <div className="flex-1" />
+
+      {/* Botón Nueva Evaluación — solo desktop */}
+      <Link
+        to={newAssessmentHref}
+        className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--primary-accent)] text-white text-sm font-semibold rounded-md hover:opacity-90 transition-opacity"
+      >
+        + Nueva Evaluación
+      </Link>
+
+      {CLERK_KEY && <UserButton />}
+    </header>
+  )
+}
+
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex bg-[#f5f7fa]">
+      <div className="min-h-screen flex bg-[var(--background)]">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Topbar */}
-          <header className="sticky top-0 z-10 bg-white border-b border-[var(--border)] px-4 py-3 flex items-center gap-3">
-            {/* Hamburger mobile */}
-            <button
-              className="lg:hidden p-1 rounded text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Abrir menú"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-            </button>
-
-            <span className="font-semibold text-[var(--foreground)] lg:hidden">PRUNAPE</span>
-
-            <div className="flex-1" />
-
-            {CLERK_KEY && <UserButton />}
-          </header>
+          <AppShellTopbar onMenuOpen={() => setSidebarOpen(true)} />
 
           {/* Page content */}
           <main id="main-content" className="flex-1 p-6 max-w-5xl mx-auto w-full">
