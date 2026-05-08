@@ -34,6 +34,12 @@ function renderWithProviders(ui: React.ReactElement) {
 
 describe('a11y: páginas sin violaciones axe', () => {
   it('HomePage no tiene violaciones de accesibilidad', async () => {
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
+
     const { container } = renderWithProviders(<HomePage />)
     const results = await axe(container)
     expect(results).toHaveNoViolations()
