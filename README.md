@@ -204,7 +204,7 @@ Ninguna requerida para desarrollo. En producción:
 
 ### Frontend
 
-- `VITE_API_URL`: URL del servidor backend (default: `http://localhost:8000`)
+- `VITE_API_URL`: URL del servidor backend sin path (default: `http://localhost:8000`). El cliente agrega `/api` automáticamente.
 
 ## Contribución
 

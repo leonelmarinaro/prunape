@@ -78,7 +78,7 @@ VITE_API_URL=https://api.prunape.hospital.ar
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:8000` | URL base del API backend |
+| `VITE_API_URL` | `http://localhost:8000` | URL del servidor backend sin path. El cliente agrega `/api`. |
 
 **Producción típica:**
 ```
@@ -350,7 +350,7 @@ sqlite3 prunape.db "PRAGMA journal_mode=WAL;"
 ```bash
 # Frontend - verificar variable
 echo $VITE_API_URL
-# Debe ser URL del backend
+# Debe ser solo el host, sin path (ej: http://localhost:8000). El cliente agrega /api.
 
 # Forzar recompilar
 rm -rf frontend/dist frontend/node_modules/.vite

@@ -124,7 +124,7 @@ Ver `.env.example` en la raíz del proyecto para la lista completa.
 ### Frontend (Cloudflare Pages)
 | Variable | Descripción |
 |----------|-------------|
-| `VITE_API_URL` | URL del backend | `https://prunape.fly.dev` |
+| `VITE_API_URL` | URL del servidor backend sin path | `https://prunape.fly.dev` |
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key | `pk_live_xxx` |
 
 ## Desarrollo local con Docker
@@ -171,7 +171,7 @@ DATABASE_URL="postgresql+psycopg://..." alembic current
 ```
 
 ### Frontend blanco (blank screen)
-- Verificar que `VITE_API_URL` apunta al backend correcto
+- Verificar que `VITE_API_URL` apunta al backend correcto (sin path, el cliente agrega `/api`)
 - Verificar en Cloudflare Pages que el `_redirects` está en `dist/`
 - Revisar Console en DevTools por errores de red
 

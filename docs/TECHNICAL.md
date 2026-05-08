@@ -291,7 +291,7 @@ Configuración de rutas con React Router v7:
 **Archivo: `src/api/client.ts`**
 
 ```typescript
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api`;
 
 export async function fetchAPI<T>(
   path: string,
@@ -658,4 +658,4 @@ Crear `.env.local` o `.env.production`:
 VITE_API_URL=https://api.prunape.hospital.ar
 ```
 
-Vite reemplaza automáticamente `import.meta.env.VITE_API_URL` en build.
+Vite reemplaza automáticamente `import.meta.env.VITE_API_URL` en build. Pasá solo el host — el cliente agrega `/api` internamente.
