@@ -180,6 +180,11 @@ export default function NewAssessmentPage() {
         Nueva Evaluación — {patient.name}
       </h1>
 
+      {/* Región aria-live para anunciar cambios de paso a screen readers */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Paso {currentStep} de 3
+      </div>
+
       <Tabs value={stepValue} className="w-full">
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger

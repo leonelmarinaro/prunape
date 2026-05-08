@@ -78,13 +78,14 @@ export default function PatientListPage() {
         />
       ) : (
         <>
-          <div className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
+          {/* Tabla con scroll horizontal en mobile */}
+          <div className="bg-white rounded-lg border border-[var(--border)] overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Fecha de Nacimiento</TableHead>
-                  <TableHead>EG (sem)</TableHead>
+                  <TableHead className="hidden sm:table-cell">Fecha de Nacimiento</TableHead>
+                  <TableHead className="hidden sm:table-cell">EG (sem)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -97,9 +98,16 @@ export default function PatientListPage() {
                       >
                         {p.name}
                       </Link>
+                      {/* Info extra visible solo en mobile */}
+                      <div className="sm:hidden text-xs text-[var(--muted-foreground)] mt-0.5">
+                        {formatBirthDate(p.birth_date)}
+                        {p.gestational_age_weeks != null && (
+                          <> &bull; EG: {p.gestational_age_weeks} sem</>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell>{formatBirthDate(p.birth_date)}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatBirthDate(p.birth_date)}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {p.gestational_age_weeks ?? "Término"}
                     </TableCell>
                   </TableRow>

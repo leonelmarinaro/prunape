@@ -16,7 +16,7 @@ export function EmptyState({ title, description, action, className }: EmptyState
       )}
     >
       <div className="mb-4 text-4xl" aria-hidden="true">📋</div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+      <p className="text-lg font-semibold text-foreground mb-2">{title}</p>
       {description && (
         <p className="text-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
       )}

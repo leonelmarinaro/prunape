@@ -70,8 +70,21 @@ export default function PercentileChart({ pautas, childAgeYears, assessmentItems
   let yOffset = MARGIN.top;
 
   return (
-    <div style={{ overflowX: "auto", background: "white", borderRadius: 8, padding: 16, position: "relative" }}>
-      <svg width={chartWidth} height={svgHeight} style={{ fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ overflowX: "auto", maxWidth: "100%", background: "white", borderRadius: 8, padding: 16, position: "relative" }}>
+      <svg
+        viewBox={`0 0 ${chartWidth} ${svgHeight}`}
+        width="100%"
+        height="auto"
+        preserveAspectRatio="xMidYMid meet"
+        style={{ fontFamily: "system-ui, sans-serif", display: "block" }}
+        role="img"
+        aria-labelledby="percentile-chart-title percentile-chart-desc"
+      >
+        <title id="percentile-chart-title">Gráfico de percentiles de desarrollo infantil</title>
+        <desc id="percentile-chart-desc">
+          Barras horizontales que muestran los rangos de edad P75 y P90 para cada pauta de desarrollo,
+          con indicador de la edad actual del niño.
+        </desc>
         {/* X-axis ticks and labels */}
         {ticks.map((t) => (
           <g key={t}>
