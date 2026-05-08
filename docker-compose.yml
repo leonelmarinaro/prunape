@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: prunape_dev
+      POSTGRES_DB: prunape
+      POSTGRES_USER: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn backend.main:app --host 0.0.0.0 --port 8080 --reload"
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:prunape_dev@db:5432/prunape
+      CORS_ORIGINS: '["http://localhost:5173"]'
+      ENV: dev
+      LOG_LEVEL: INFO
+    volumes:
+      - ./backend:/app/backend
+      - ./alembic.ini:/app/alembic.ini
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci --prefer-offline && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080
+    volumes:
+      - ./frontend:/app
+      - frontend_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  frontend_modules:
