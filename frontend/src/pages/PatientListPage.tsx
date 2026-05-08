@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { SkeletonTable } from "@/components/ui/SkeletonTable"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { AvatarInitials } from "@/components/ui/AvatarInitials"
 
 const PAGE_SIZE = 10
 
@@ -40,7 +41,7 @@ export default function PatientListPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Pacientes</h1>
-        <Button asChild size="sm">
+        <Button asChild size="sm" className="bg-[var(--primary-accent)] text-white hover:opacity-90">
           <Link to="/patients/new">+ Nuevo Paciente</Link>
         </Button>
       </div>
@@ -92,18 +93,22 @@ export default function PatientListPage() {
                 {paginated.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
-                      <Link
-                        to={`/patients/${p.id}`}
-                        className="font-medium text-[var(--primary)] hover:underline"
-                      >
-                        {p.name}
-                      </Link>
-                      {/* Info extra visible solo en mobile */}
-                      <div className="sm:hidden text-xs text-[var(--muted-foreground)] mt-0.5">
-                        {formatBirthDate(p.birth_date)}
-                        {p.gestational_age_weeks != null && (
-                          <> &bull; EG: {p.gestational_age_weeks} sem</>
-                        )}
+                      <div className="flex items-center gap-2.5">
+                        <AvatarInitials name={p.name} size="sm" />
+                        <div>
+                          <Link
+                            to={`/patients/${p.id}`}
+                            className="font-medium text-[var(--primary-accent)] hover:underline block"
+                          >
+                            {p.name}
+                          </Link>
+                          <div className="sm:hidden text-xs text-[var(--muted-foreground)] mt-0.5">
+                            {formatBirthDate(p.birth_date)}
+                            {p.gestational_age_weeks != null && (
+                              <> &bull; EG: {p.gestational_age_weeks} sem</>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{formatBirthDate(p.birth_date)}</TableCell>
