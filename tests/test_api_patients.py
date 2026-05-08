@@ -93,3 +93,47 @@ def test_delete_patient(client, sample_patient_data):
 def test_delete_patient_not_found(client):
     response = client.delete("/api/patients/9999")
     assert response.status_code == 404
+
+
+def test_create_patient_future_birth_date(client):
+    response = client.post(
+        "/api/patients",
+        json={"name": "Futuro", "birth_date": "2099-01-01"},
+    )
+    assert response.status_code == 422
+
+
+def test_create_patient_gestational_age_out_of_range(client):
+    response = client.post(
+        "/api/patients",
+        json={"name": "Test", "birth_date": "2022-01-01", "gestational_age_weeks": 10},
+    )
+    assert response.status_code == 422
+
+
+def test_update_patient_birth_date_valid(client, sample_patient_data):
+    created = client.post("/api/patients", json=sample_patient_data).json()
+    response = client.put(
+        f"/api/patients/{created['id']}",
+        json={"birth_date": "2020-06-15"},
+    )
+    assert response.status_code == 200
+    assert response.json()["birth_date"] == "2020-06-15"
+
+
+def test_update_patient_future_birth_date(client, sample_patient_data):
+    created = client.post("/api/patients", json=sample_patient_data).json()
+    response = client.put(
+        f"/api/patients/{created['id']}",
+        json={"birth_date": "2099-01-01"},
+    )
+    assert response.status_code == 422
+
+
+def test_update_patient_gestational_age_out_of_range(client, sample_patient_data):
+    created = client.post("/api/patients", json=sample_patient_data).json()
+    response = client.put(
+        f"/api/patients/{created['id']}",
+        json={"gestational_age_weeks": 60},
+    )
+    assert response.status_code == 422

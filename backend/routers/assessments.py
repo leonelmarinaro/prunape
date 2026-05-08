@@ -1,4 +1,3 @@
-from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -15,7 +14,9 @@ def calculate_age(req: schemas.AgeCalculationRequest, db: Session = Depends(get_
     gestational_age_weeks = req.gestational_age_weeks
 
     if req.patient_id:
-        patient = db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
+        patient = (
+            db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
+        )
         if not patient:
             raise HTTPException(status_code=404, detail="Paciente no encontrado")
         birth_date = patient.birth_date
@@ -25,7 +26,9 @@ def calculate_age(req: schemas.AgeCalculationRequest, db: Session = Depends(get_
         raise HTTPException(status_code=400, detail="Se requiere fecha de nacimiento")
 
     chrono = age_service.calculate_chronological_age(birth_date, req.assessment_date)
-    corrected = age_service.calculate_corrected_age(birth_date, req.assessment_date, gestational_age_weeks)
+    corrected = age_service.calculate_corrected_age(
+        birth_date, req.assessment_date, gestational_age_weeks
+    )
     effective = corrected if corrected is not None else chrono
     applicable = age_service.get_applicable_pautas(effective)
 
@@ -38,27 +41,41 @@ def calculate_age(req: schemas.AgeCalculationRequest, db: Session = Depends(get_
 
 @router.post("", response_model=schemas.AssessmentResponse, status_code=201)
 def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_db)):
-    patient = db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
+    patient = (
+        db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
+    )
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
-    chrono = age_service.calculate_chronological_age(patient.birth_date, req.assessment_date)
+    if req.assessment_date < patient.birth_date:
+        raise HTTPException(
+            status_code=422,
+            detail="La fecha de evaluación no puede ser anterior al nacimiento del paciente",
+        )
+
+    chrono = age_service.calculate_chronological_age(
+        patient.birth_date, req.assessment_date
+    )
     corrected = age_service.calculate_corrected_age(
         patient.birth_date, req.assessment_date, patient.gestational_age_weeks
     )
     effective = corrected if corrected is not None else chrono
 
-    # Build items for evaluation
-    eval_items = []
+    # Validate all pautas exist and build both eval_items and db metadata in one pass
+    resolved: list[tuple] = []  # (item, pauta)
     for item in req.items:
         pauta = age_service.get_pauta_by_id(item.pauta_id)
         if not pauta:
-            raise HTTPException(status_code=400, detail=f"Pauta {item.pauta_id} no encontrada")
-        eval_items.append({"pauta_id": item.pauta_id, "passed": item.passed})
+            raise HTTPException(
+                status_code=422, detail=f"Pauta {item.pauta_id} no encontrada"
+            )
+        resolved.append((item, pauta))
 
-    result, details = evaluation.evaluate(eval_items, effective)
+    eval_items = [
+        {"pauta_id": item.pauta_id, "passed": item.passed} for item, _ in resolved
+    ]
+    result, _ = evaluation.evaluate(eval_items, effective)
 
-    # Persist
     assessment = models.Assessment(
         patient_id=req.patient_id,
         assessment_date=req.assessment_date,
@@ -69,9 +86,13 @@ def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_d
     db.add(assessment)
     db.flush()
 
-    for item in req.items:
-        pauta = age_service.get_pauta_by_id(item.pauta_id)
-        pauta_type = "A" if pauta.is_pauta_a(effective) else "B"
+    for item, pauta in resolved:
+        if pauta.is_pauta_a(effective):
+            pauta_type = "A"
+        elif pauta.is_pauta_b(effective):
+            pauta_type = "B"
+        else:
+            pauta_type = "N/A"
         db_item = models.AssessmentItem(
             assessment_id=assessment.id,
             pauta_id=item.pauta_id,
@@ -89,7 +110,11 @@ def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_d
 
 @router.get("/{assessment_id}", response_model=schemas.AssessmentResponse)
 def get_assessment(assessment_id: int, db: Session = Depends(get_db)):
-    assessment = db.query(models.Assessment).filter(models.Assessment.id == assessment_id).first()
+    assessment = (
+        db.query(models.Assessment)
+        .filter(models.Assessment.id == assessment_id)
+        .first()
+    )
     if not assessment:
         raise HTTPException(status_code=404, detail="Evaluación no encontrada")
     return assessment
@@ -97,7 +122,11 @@ def get_assessment(assessment_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{assessment_id}", status_code=204)
 def delete_assessment(assessment_id: int, db: Session = Depends(get_db)):
-    assessment = db.query(models.Assessment).filter(models.Assessment.id == assessment_id).first()
+    assessment = (
+        db.query(models.Assessment)
+        .filter(models.Assessment.id == assessment_id)
+        .first()
+    )
     if not assessment:
         raise HTTPException(status_code=404, detail="Evaluación no encontrada")
     db.delete(assessment)

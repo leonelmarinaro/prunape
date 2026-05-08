@@ -1,5 +1,14 @@
-from datetime import date, datetime
-from sqlalchemy import Column, Integer, String, Date, DateTime, Float, Boolean, ForeignKey
+from datetime import datetime, timezone
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Date,
+    DateTime,
+    Float,
+    Boolean,
+    ForeignKey,
+)
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -11,9 +20,11 @@ class Patient(Base):
     name = Column(String(200), nullable=False)
     birth_date = Column(Date, nullable=False)
     gestational_age_weeks = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    assessments = relationship("Assessment", back_populates="patient", cascade="all, delete-orphan")
+    assessments = relationship(
+        "Assessment", back_populates="patient", cascade="all, delete-orphan"
+    )
 
 
 class Assessment(Base):
@@ -25,10 +36,12 @@ class Assessment(Base):
     chronological_age = Column(Float, nullable=False)
     corrected_age = Column(Float, nullable=True)
     result = Column(String(10), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     patient = relationship("Patient", back_populates="assessments")
-    items = relationship("AssessmentItem", back_populates="assessment", cascade="all, delete-orphan")
+    items = relationship(
+        "AssessmentItem", back_populates="assessment", cascade="all, delete-orphan"
+    )
 
 
 class AssessmentItem(Base):
@@ -39,7 +52,7 @@ class AssessmentItem(Base):
     pauta_id = Column(Integer, nullable=False)
     pauta_name = Column(String(200), nullable=False)
     area = Column(String(50), nullable=False)
-    pauta_type = Column(String(1), nullable=False)
+    pauta_type = Column(String(5), nullable=False)
     passed = Column(Boolean, nullable=False)
 
     assessment = relationship("Assessment", back_populates="items")
