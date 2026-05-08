@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom"
 import { SignedIn, SignedOut, SignIn, UserButton, useAuth } from "@clerk/clerk-react"
 import { setAuthTokenGetter } from "./api/client"
 import { cn } from "@/lib/utils"
+import { Home, Users } from "lucide-react"
 
 // Lazy imports — cada página se carga solo cuando se necesita
 const HomePage = lazy(() => import("@/pages/HomePage"))
@@ -36,14 +37,13 @@ function AuthSync() {
 }
 
 const navItems = [
-  { to: "/", label: "Inicio", end: true },
-  { to: "/patients", label: "Pacientes" },
+  { to: "/", label: "Inicio", end: true, icon: <Home size={16} /> },
+  { to: "/patients", label: "Pacientes", icon: <Users size={16} /> },
 ]
 
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <>
-      {/* Overlay mobile */}
       {open && (
         <div
           className="fixed inset-0 z-20 bg-black/40 lg:hidden"
@@ -52,7 +52,6 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 w-60 bg-white border-r border-[var(--border)] flex flex-col",
@@ -63,12 +62,21 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         aria-label="Navegación principal"
       >
         {/* Logo */}
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-[var(--border)]">
-          <span className="font-bold text-lg text-[var(--primary)]">PRUNAPE</span>
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)]">
+          <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2C8 2 4 5 4 9a4 4 0 008 0c0-4-4-7-4-7z" fill="white" opacity=".9"/>
+              <circle cx="8" cy="9" r="1.5" fill="#93c5fd"/>
+            </svg>
+          </div>
+          <div>
+            <div className="font-extrabold text-sm text-[var(--primary)] leading-tight">PRUNAPE</div>
+            <div className="text-[10px] text-[var(--muted-foreground)] leading-tight">Hospital Garrahan</div>
+          </div>
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+        {/* Nav */}
+        <nav className="flex-1 px-2.5 py-3 flex flex-col gap-0.5">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -77,21 +85,30 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
               onClick={onClose}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors",
                   isActive
-                    ? "bg-[var(--primary)] text-white"
-                    : "text-[var(--foreground)] hover:bg-[var(--muted)]"
+                    ? "border-l-[3px] border-[var(--primary-accent)] bg-blue-50 font-semibold text-[var(--primary)]"
+                    : "border-l-[3px] border-transparent text-[var(--muted-foreground)] hover:bg-slate-50 hover:text-[var(--foreground)]"
                 )
               }
             >
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  <span className={isActive ? "text-[var(--primary-accent)]" : ""}>
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        {/* Footer del sidebar */}
-        <div className="px-6 py-4 border-t border-[var(--border)] text-xs text-[var(--muted-foreground)]">
-          Hospital Garrahan
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-[var(--border)]">
+          <div className="text-[10px] text-[var(--muted-foreground)] text-center">
+            Hospital Garrahan · PRUNAPE
+          </div>
         </div>
       </aside>
     </>
