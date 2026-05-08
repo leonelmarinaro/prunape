@@ -3,14 +3,17 @@ import { useParams, useNavigate } from "react-router-dom"
 import { usePatient } from "../api/patients"
 import { useCalculateAge, useCreateAssessment } from "../api/assessments"
 import type { ApplicablePauta, AssessmentItemInput } from "../types"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
+import { StepIndicator } from "@/components/ui/StepIndicator"
+import { AvatarInitials } from "@/components/ui/AvatarInitials"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@clerk/clerk-react"
 
 type Step = 1 | 2 | 3
+
+const STEP_LABELS = ["Fecha", "Evaluación", "Resultado"]
 
 const AREAS = ["Personal Social", "Motor Fino", "Lenguaje", "Motor Grueso"]
 
@@ -172,72 +175,47 @@ export default function NewAssessmentPage() {
 
   if (!patient) return <p>Cargando...</p>
 
-  const stepValue = `step-${currentStep}`
-
-  return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-[var(--foreground)]">
-        Nueva Evaluación — {patient.name}
-      </h1>
-
-      {/* Región aria-live para anunciar cambios de paso a screen readers */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        Paso {currentStep} de 3
-      </div>
-
-      <Tabs value={stepValue} className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger
-            value="step-1"
-            disabled={currentStep < 1}
-            onClick={() => currentStep > 1 && setCurrentStep(1)}
-          >
-            1. Edad
-          </TabsTrigger>
-          <TabsTrigger
-            value="step-2"
-            disabled={currentStep < 2}
-            onClick={() => currentStep > 2 && setCurrentStep(2)}
-          >
-            2. Evaluación
-          </TabsTrigger>
-          <TabsTrigger value="step-3" disabled={currentStep < 3}>
-            3. Resultado
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Step 1: Confirmación de fecha */}
-        <TabsContent value="step-1">
-          <div className="bg-white rounded-lg p-6 border border-[var(--border)] mt-4">
-            <h2 className="text-lg font-semibold mb-4">Paso 1: Seleccionar fecha</h2>
-            <label className="block mb-4">
-              <span className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                Fecha de Evaluación
-              </span>
-              <input
-                type="date"
-                value={assessmentDate}
-                onChange={(e) => setAssessmentDate(e.target.value)}
-                className="px-3 py-2 rounded-md border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              />
-            </label>
-            {error && (
-              <p className="text-red-600 text-sm mb-4" role="alert">
-                {error}
-              </p>
-            )}
-            <Button
-              onClick={handleCalculateAge}
-              disabled={calculateAge.isPending}
-            >
-              {calculateAge.isPending ? "Calculando..." : "Comenzar Evaluación"}
-            </Button>
+  function StepFecha() {
+    return (
+      <div className="bg-white rounded-lg p-6 border border-[var(--border)]">
+        {/* Card contexto paciente */}
+        <div className="flex items-center gap-3 mb-5 pb-4 border-b border-[var(--border)]">
+          <AvatarInitials name={patient!.name} size="md" />
+          <div className="text-xs text-[var(--muted-foreground)]">
+            Nacimiento: {new Date(patient!.birth_date + "T00:00:00").toLocaleDateString("es-AR")}
           </div>
-        </TabsContent>
+        </div>
 
-        {/* Step 2: Evaluación de pautas */}
-        <TabsContent value="step-2">
-          <div className="mt-4 space-y-4">
+        <label className="block mb-4">
+          <span className="block text-sm font-medium text-[var(--foreground)] mb-1.5">
+            Fecha de Evaluación
+          </span>
+          <input
+            type="date"
+            value={assessmentDate}
+            onChange={(e) => setAssessmentDate(e.target.value)}
+            className="px-3 py-2 rounded-md border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-accent)]"
+          />
+        </label>
+
+        {error && (
+          <p className="text-red-600 text-sm mb-4" role="alert">{error}</p>
+        )}
+
+        <Button
+          onClick={handleCalculateAge}
+          disabled={calculateAge.isPending}
+          className="w-full bg-[var(--primary-accent)] hover:opacity-90"
+        >
+          {calculateAge.isPending ? "Calculando..." : "Comenzar Evaluación"}
+        </Button>
+      </div>
+    )
+  }
+
+  function StepEvaluacion() {
+    return (
+      <div className="mt-4 space-y-4">
             {/* Resumen de edad */}
             <div className="bg-white rounded-lg p-4 border border-[var(--border)]">
               <p className="text-sm">
@@ -370,11 +348,12 @@ export default function NewAssessmentPage() {
               </Button>
             </div>
           </div>
-        </TabsContent>
+    )
+  }
 
-        {/* Step 3: Revisión y envío */}
-        <TabsContent value="step-3">
-          <div className="mt-4 space-y-4">
+  function StepRevision() {
+    return (
+      <div className="mt-4 space-y-4">
             <div className="bg-white rounded-lg p-6 border border-[var(--border)]">
               <h2 className="text-lg font-semibold mb-4">Resumen de Respuestas</h2>
 
@@ -438,8 +417,30 @@ export default function NewAssessmentPage() {
               </Button>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+    )
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-xl font-bold mb-5 text-[var(--foreground)]">
+        Nueva Evaluación — {patient.name}
+      </h1>
+
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Paso {currentStep} de 3
+      </div>
+
+      <StepIndicator
+        steps={STEP_LABELS}
+        current={currentStep}
+        onBack={(step) => {
+          if (step < currentStep) setCurrentStep(step as Step)
+        }}
+      />
+
+      {currentStep === 1 && <StepFecha />}
+      {currentStep === 2 && <StepEvaluacion />}
+      {currentStep === 3 && <StepRevision />}
     </div>
   )
 }
