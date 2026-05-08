@@ -1,15 +1,31 @@
-import { useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom"
 import { SignedIn, SignedOut, SignIn, UserButton, useAuth } from "@clerk/clerk-react"
 import { setAuthTokenGetter } from "./api/client"
 import { cn } from "@/lib/utils"
-import HomePage from "./pages/HomePage"
-import PatientListPage from "./pages/PatientListPage"
-import PatientCreatePage from "./pages/PatientCreatePage"
-import PatientEditPage from "./pages/PatientEditPage"
-import PatientDetailPage from "./pages/PatientDetailPage"
-import NewAssessmentPage from "./pages/NewAssessmentPage"
-import AssessmentResultPage from "./pages/AssessmentResultPage"
+
+// Lazy imports — cada página se carga solo cuando se necesita
+const HomePage = lazy(() => import("@/pages/HomePage"))
+const PatientListPage = lazy(() => import("@/pages/PatientListPage"))
+const PatientCreatePage = lazy(() => import("@/pages/PatientCreatePage"))
+const PatientEditPage = lazy(() => import("@/pages/PatientEditPage"))
+const PatientDetailPage = lazy(() => import("@/pages/PatientDetailPage"))
+const NewAssessmentPage = lazy(() => import("@/pages/NewAssessmentPage"))
+const AssessmentResultPage = lazy(() => import("@/pages/AssessmentResultPage"))
+
+// Skeleton de carga para Suspense
+function PageSkeleton() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-pulse space-y-4 w-full max-w-md">
+        <div className="h-8 bg-muted rounded w-3/4" />
+        <div className="h-4 bg-muted rounded w-full" />
+        <div className="h-4 bg-muted rounded w-5/6" />
+        <div className="h-32 bg-muted rounded" />
+      </div>
+    </div>
+  )
+}
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -114,15 +130,17 @@ function AppShell() {
 
           {/* Page content */}
           <main id="main-content" className="flex-1 p-6 max-w-5xl mx-auto w-full">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/patients" element={<PatientListPage />} />
-              <Route path="/patients/new" element={<PatientCreatePage />} />
-              <Route path="/patients/:id/edit" element={<PatientEditPage />} />
-              <Route path="/patients/:id" element={<PatientDetailPage />} />
-              <Route path="/patients/:id/assess" element={<NewAssessmentPage />} />
-              <Route path="/assessments/:id" element={<AssessmentResultPage />} />
-            </Routes>
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/patients" element={<PatientListPage />} />
+                <Route path="/patients/new" element={<PatientCreatePage />} />
+                <Route path="/patients/:id/edit" element={<PatientEditPage />} />
+                <Route path="/patients/:id" element={<PatientDetailPage />} />
+                <Route path="/patients/:id/assess" element={<NewAssessmentPage />} />
+                <Route path="/assessments/:id" element={<AssessmentResultPage />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </div>
