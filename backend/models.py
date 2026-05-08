@@ -21,6 +21,7 @@ class Patient(Base):
     birth_date = Column(Date, nullable=False)
     gestational_age_weeks = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_by = Column(String(200), nullable=True)
 
     assessments = relationship(
         "Assessment", back_populates="patient", cascade="all, delete-orphan"
@@ -37,6 +38,7 @@ class Assessment(Base):
     corrected_age = Column(Float, nullable=True)
     result = Column(String(10), nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_by = Column(String(200), nullable=True)
 
     patient = relationship("Patient", back_populates="assessments")
     items = relationship(

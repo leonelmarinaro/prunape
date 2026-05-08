@@ -3,16 +3,22 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from .. import models, schemas
+from ..security.clerk_auth import ClerkUser, current_user
 
 router = APIRouter(prefix="/api/patients", tags=["patients"])
 
 
 @router.post("", response_model=schemas.PatientResponse, status_code=201)
-def create_patient(patient: schemas.PatientCreate, db: Session = Depends(get_db)):
+def create_patient(
+    patient: schemas.PatientCreate,
+    db: Session = Depends(get_db),
+    user: ClerkUser = Depends(current_user),
+):
     db_patient = models.Patient(
         name=patient.name,
         birth_date=patient.birth_date,
         gestational_age_weeks=patient.gestational_age_weeks,
+        created_by=user.user_id,
     )
     db.add(db_patient)
     db.commit()
@@ -21,7 +27,13 @@ def create_patient(patient: schemas.PatientCreate, db: Session = Depends(get_db)
 
 
 @router.get("", response_model=list[schemas.PatientResponse])
-def list_patients(search: str = "", skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_patients(
+    search: str = "",
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     query = db.query(models.Patient)
     if search:
         query = query.filter(models.Patient.name.ilike(f"%{search}%"))
@@ -29,7 +41,11 @@ def list_patients(search: str = "", skip: int = 0, limit: int = 100, db: Session
 
 
 @router.get("/{patient_id}", response_model=schemas.PatientDetailResponse)
-def get_patient(patient_id: int, db: Session = Depends(get_db)):
+def get_patient(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
@@ -37,7 +53,12 @@ def get_patient(patient_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{patient_id}", response_model=schemas.PatientResponse)
-def update_patient(patient_id: int, update: schemas.PatientUpdate, db: Session = Depends(get_db)):
+def update_patient(
+    patient_id: int,
+    update: schemas.PatientUpdate,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
@@ -49,7 +70,11 @@ def update_patient(patient_id: int, update: schemas.PatientUpdate, db: Session =
 
 
 @router.delete("/{patient_id}", status_code=204)
-def delete_patient(patient_id: int, db: Session = Depends(get_db)):
+def delete_patient(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")

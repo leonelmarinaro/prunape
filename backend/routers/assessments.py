@@ -4,12 +4,17 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models, schemas
 from ..services import age_service, evaluation
+from ..security.clerk_auth import ClerkUser, current_user
 
 router = APIRouter(prefix="/api/assessments", tags=["assessments"])
 
 
 @router.post("/calculate-age", response_model=schemas.AgeCalculationResponse)
-def calculate_age(req: schemas.AgeCalculationRequest, db: Session = Depends(get_db)):
+def calculate_age(
+    req: schemas.AgeCalculationRequest,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     birth_date = req.birth_date
     gestational_age_weeks = req.gestational_age_weeks
 
@@ -40,7 +45,11 @@ def calculate_age(req: schemas.AgeCalculationRequest, db: Session = Depends(get_
 
 
 @router.post("", response_model=schemas.AssessmentResponse, status_code=201)
-def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_db)):
+def create_assessment(
+    req: schemas.AssessmentCreate,
+    db: Session = Depends(get_db),
+    user: ClerkUser = Depends(current_user),
+):
     patient = (
         db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
     )
@@ -82,6 +91,7 @@ def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_d
         chronological_age=float(chrono),
         corrected_age=float(corrected) if corrected is not None else None,
         result=result,
+        created_by=user.user_id,
     )
     db.add(assessment)
     db.flush()
@@ -109,7 +119,11 @@ def create_assessment(req: schemas.AssessmentCreate, db: Session = Depends(get_d
 
 
 @router.get("/{assessment_id}", response_model=schemas.AssessmentResponse)
-def get_assessment(assessment_id: int, db: Session = Depends(get_db)):
+def get_assessment(
+    assessment_id: int,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     assessment = (
         db.query(models.Assessment)
         .filter(models.Assessment.id == assessment_id)
@@ -121,7 +135,11 @@ def get_assessment(assessment_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{assessment_id}", status_code=204)
-def delete_assessment(assessment_id: int, db: Session = Depends(get_db)):
+def delete_assessment(
+    assessment_id: int,
+    db: Session = Depends(get_db),
+    _user: ClerkUser = Depends(current_user),
+):
     assessment = (
         db.query(models.Assessment)
         .filter(models.Assessment.id == assessment_id)
