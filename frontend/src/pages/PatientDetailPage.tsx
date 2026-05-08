@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { usePatient } from "../api/patients"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,34 +37,35 @@ export default function PatientDetailPage() {
   if (!patient) return <p>Paciente no encontrado.</p>
 
   const age = calcAge(patient.birth_date)
+  const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
       {/* Header con avatar */}
-      <div className="bg-white rounded-lg border border-[var(--border)] p-6">
+      <div className="bg-white rounded-lg border border-[var(--border)] p-5">
         <div className="flex items-start gap-4">
           <AvatarInitials name={patient.name} size="lg" />
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-semibold truncate">{patient.name}</h1>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[var(--muted-foreground)]">
-              <span>
-                <strong>Nacimiento:</strong>{" "}
-                {new Date(patient.birth_date + "T00:00:00").toLocaleDateString("es-AR")}
-              </span>
-              <span>
-                <strong>Edad:</strong> {age}
-              </span>
-              <span>
-                <strong>Edad Gestacional:</strong>{" "}
-                {patient.gestational_age_weeks
-                  ? `${patient.gestational_age_weeks} semanas`
-                  : "Término"}
-              </span>
-            </div>
+            <h1 className="text-xl font-bold truncate text-[var(--foreground)]">{patient.name}</h1>
+            <p className="text-sm text-[var(--muted-foreground)] mt-0.5">{age}</p>
           </div>
           <Button asChild variant="outline" size="sm" className="shrink-0">
             <Link to={`/patients/${patient.id}/edit`}>Editar</Link>
           </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="bg-slate-50 rounded-md p-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)] mb-0.5">Nacimiento</div>
+            <div className="text-sm font-semibold text-[var(--primary)]">
+              {new Date(patient.birth_date + "T00:00:00").toLocaleDateString("es-AR")}
+            </div>
+          </div>
+          <div className="bg-slate-50 rounded-md p-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)] mb-0.5">Edad Gestacional</div>
+            <div className="text-sm font-semibold text-[var(--primary)]">
+              {patient.gestational_age_weeks ? `${patient.gestational_age_weeks} semanas` : "Término"}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -100,14 +101,13 @@ export default function PatientDetailPage() {
               </TableHeader>
               <TableBody>
                 {patient.assessments.map((a) => (
-                  <TableRow key={a.id}>
+                  <TableRow
+                    key={a.id}
+                    className="cursor-pointer hover:bg-slate-50"
+                    onClick={() => navigate(`/assessments/${a.id}`)}
+                  >
                     <TableCell>
-                      <Link
-                        to={`/assessments/${a.id}`}
-                        className="text-[var(--primary)] hover:underline"
-                      >
-                        {new Date(a.assessment_date + "T00:00:00").toLocaleDateString("es-AR")}
-                      </Link>
+                      {new Date(a.assessment_date + "T00:00:00").toLocaleDateString("es-AR")}
                     </TableCell>
                     <TableCell>{a.chronological_age.toFixed(2)} años</TableCell>
                     <TableCell>
@@ -118,11 +118,11 @@ export default function PatientDetailPage() {
                     <TableCell>
                       <Badge
                         className={cn(
+                          "text-xs font-bold rounded-full border-0",
                           a.result === "PASA"
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                            : "bg-red-100 text-red-800 border-red-200"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-slate-100 text-slate-700"
                         )}
-                        variant="outline"
                       >
                         {a.result === "PASA" ? "PASA" : "NO PASA"}
                       </Badge>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import PatientDetailPage from '../PatientDetailPage'
 import * as patientsApi from '../../api/patients'
 import { makePatientDetail, makeAssessment } from '../../test/mocks'
@@ -135,7 +135,7 @@ describe('PatientDetailPage', () => {
     })
   })
 
-  it('las evaluaciones tienen links a su resultado', async () => {
+  it('las filas de evaluaciones son clickeables y navegan al resultado', async () => {
     const assessment = makeAssessment({ id: 20, result: 'PASA', assessment_date: '2024-06-01' })
     const detail = makePatientDetail({ assessments: [assessment] })
     vi.mocked(patientsApi.usePatient).mockReturnValue({
@@ -143,12 +143,35 @@ describe('PatientDetailPage', () => {
       isLoading: false,
     } as ReturnType<typeof patientsApi.usePatient>)
 
-    renderPage()
+    let capturedLocation = ''
+    function LocationCapture() {
+      const loc = useLocation()
+      capturedLocation = loc.pathname
+      return null
+    }
+
+    render(
+      <QueryWrapper>
+        <MemoryRouter initialEntries={['/patients/1']}>
+          <Routes>
+            <Route path="/patients/:id" element={<PatientDetailPage />} />
+            <Route path="/assessments/:id" element={<LocationCapture />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryWrapper>
+    )
 
     await waitFor(() => {
       // toLocaleDateString('es-AR') produces "1/6/2024" format
-      const link = screen.getByRole('link', { name: /\/6\/2024/ })
-      expect(link).toHaveAttribute('href', '/assessments/20')
+      expect(screen.getByText(/\/6\/2024/)).toBeInTheDocument()
+    })
+
+    const row = screen.getByText(/\/6\/2024/).closest('tr')
+    expect(row).toHaveClass('cursor-pointer')
+    fireEvent.click(row!)
+
+    await waitFor(() => {
+      expect(capturedLocation).toBe('/assessments/20')
     })
   })
 
