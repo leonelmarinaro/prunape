@@ -1,75 +1,139 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { usePatients } from "../api/patients";
-import { useDebounce } from "../hooks/useDebounce";
+import { useState } from "react"
+import { Link } from "react-router-dom"
+import { usePatients } from "../api/patients"
+import { useDebounce } from "../hooks/useDebounce"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { SkeletonTable } from "@/components/ui/SkeletonTable"
+import { EmptyState } from "@/components/ui/EmptyState"
+
+const PAGE_SIZE = 10
+
+function formatBirthDate(dateStr: string): string {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("es-AR")
+}
 
 export default function PatientListPage() {
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
-  const { data: patients = [], isLoading: loading } = usePatients(debouncedSearch);
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const debouncedSearch = useDebounce(search, 300)
+  const { data: patients = [], isLoading } = usePatients(debouncedSearch)
+
+  const totalPages = Math.max(1, Math.ceil(patients.length / PAGE_SIZE))
+  const paginated = patients.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+    setPage(1)
+  }
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h1>Pacientes</h1>
-        <Link
-          to="/patients/new"
-          style={{
-            background: "#059669",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: 6,
-            textDecoration: "none",
-          }}
-        >
-          + Nuevo Paciente
-        </Link>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Pacientes</h1>
+        <Button asChild size="sm">
+          <Link to="/patients/new">+ Nuevo Paciente</Link>
+        </Button>
       </div>
-      <input
+
+      {/* Búsqueda */}
+      <Input
         type="text"
         placeholder="Buscar por nombre..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "10px 14px",
-          borderRadius: 6,
-          border: "1px solid #d1d5db",
-          marginBottom: 16,
-          fontSize: "1rem",
-          boxSizing: "border-box",
-        }}
+        onChange={handleSearchChange}
+        className="max-w-sm"
       />
-      {loading ? (
-        <p>Cargando...</p>
+
+      {/* Contenido */}
+      {isLoading ? (
+        <div className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
+          <p className="sr-only">Cargando...</p>
+          <SkeletonTable columns={3} rows={5} />
+        </div>
       ) : patients.length === 0 ? (
-        <p style={{ color: "#888" }}>No se encontraron pacientes.</p>
+        <EmptyState
+          title="No se encontraron pacientes."
+          description={
+            debouncedSearch
+              ? `No hay pacientes que coincidan con "${debouncedSearch}".`
+              : "Todavía no hay pacientes registrados."
+          }
+          action={
+            !debouncedSearch ? (
+              <Button asChild>
+                <Link to="/patients/new">Crear primer paciente</Link>
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: 8 }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-              <th style={{ padding: "10px 14px" }}>Nombre</th>
-              <th style={{ padding: "10px 14px" }}>Fecha de Nacimiento</th>
-              <th style={{ padding: "10px 14px" }}>EG (sem)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((p) => (
-              <tr key={p.id} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                <td style={{ padding: "10px 14px" }}>
-                  <Link to={`/patients/${p.id}`} style={{ color: "#1a56db" }}>
-                    {p.name}
-                  </Link>
-                </td>
-                <td style={{ padding: "10px 14px" }}>
-                  {new Date(p.birth_date + "T00:00:00").toLocaleDateString("es-AR")}
-                </td>
-                <td style={{ padding: "10px 14px" }}>{p.gestational_age_weeks ?? "Término"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          <div className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Fecha de Nacimiento</TableHead>
+                  <TableHead>EG (sem)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginated.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>
+                      <Link
+                        to={`/patients/${p.id}`}
+                        className="font-medium text-[var(--primary)] hover:underline"
+                      >
+                        {p.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{formatBirthDate(p.birth_date)}</TableCell>
+                    <TableCell>
+                      {p.gestational_age_weeks ?? "Término"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Anterior
+              </Button>
+              <span className="text-sm text-[var(--muted-foreground)]">
+                Página {page} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Siguiente
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
-  );
+  )
 }

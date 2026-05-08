@@ -1,18 +1,20 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useCreatePatient } from "../api/patients"
+import { usePatient, useUpdatePatient } from "../api/patients"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const today = new Date().toISOString().split("T")[0]
 
@@ -32,10 +34,13 @@ const patientSchema = z.object({
 
 type PatientFormValues = z.infer<typeof patientSchema>
 
-export default function PatientCreatePage() {
+export default function PatientEditPage() {
+  const { id } = useParams<{ id: string }>()
+  const patientId = id ? parseInt(id) : undefined
   const navigate = useNavigate()
-  const createPatient = useCreatePatient()
-  const [serverError, setServerError] = useState("")
+
+  const { data: patient, isLoading } = usePatient(patientId)
+  const updatePatient = useUpdatePatient()
 
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -46,14 +51,30 @@ export default function PatientCreatePage() {
     },
   })
 
-  // Derive combined error for missing required fields (for test compatibility)
+  // Preload form when patient data arrives
+  useEffect(() => {
+    if (patient) {
+      form.reset({
+        name: patient.name,
+        birth_date: patient.birth_date,
+        gestational_age_weeks: patient.gestational_age_weeks ?? undefined,
+      })
+    }
+  }, [patient, form])
+
   const nameError = form.formState.errors.name
   const dateError = form.formState.errors.birth_date
   const combinedError =
     nameError || dateError ? "Nombre y fecha de nacimiento son obligatorios." : null
 
+  const serverError = updatePatient.isError
+    ? (updatePatient.error instanceof Error
+        ? updatePatient.error.message
+        : "Error al guardar")
+    : null
+
   const onSubmit = async (values: PatientFormValues) => {
-    setServerError("")
+    if (!patientId) return
     const gestWeeks =
       values.gestational_age_weeks !== undefined &&
       !isNaN(values.gestational_age_weeks as number)
@@ -61,25 +82,43 @@ export default function PatientCreatePage() {
         : null
 
     try {
-      const patient = await createPatient.mutateAsync({
-        name: values.name.trim(),
-        birth_date: values.birth_date,
-        gestational_age_weeks: gestWeeks,
+      await updatePatient.mutateAsync({
+        id: patientId,
+        data: {
+          name: values.name.trim(),
+          birth_date: values.birth_date,
+          gestational_age_weeks: gestWeeks,
+        },
       })
-      navigate(`/patients/${patient.id}`)
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : "Error al crear paciente")
+      navigate(`/patients/${patientId}`)
+    } catch {
+      // error handled via updatePatient.isError
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="max-w-lg space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="bg-white rounded-lg border border-[var(--border)] p-6 space-y-5">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!patient) return <p>Paciente no encontrado.</p>
+
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-semibold">Nuevo Paciente</h1>
+      <h1 className="text-2xl font-semibold">Editar Paciente</h1>
 
       <div className="bg-white rounded-lg border border-[var(--border)] p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {/* Nombre */}
             <FormField
               control={form.control}
               name="name"
@@ -93,7 +132,6 @@ export default function PatientCreatePage() {
               )}
             />
 
-            {/* Fecha de Nacimiento */}
             <FormField
               control={form.control}
               name="birth_date"
@@ -107,7 +145,6 @@ export default function PatientCreatePage() {
               )}
             />
 
-            {/* Edad Gestacional */}
             <FormField
               control={form.control}
               name="gestational_age_weeks"
@@ -127,22 +164,21 @@ export default function PatientCreatePage() {
                       }}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Errores combinados de campos obligatorios */}
             {combinedError && (
               <p className="text-sm font-medium text-destructive">{combinedError}</p>
             )}
 
-            {/* Error del servidor */}
             {serverError && !combinedError && (
               <p className="text-sm font-medium text-destructive">{serverError}</p>
             )}
 
-            <Button type="submit" disabled={createPatient.isPending} className="w-full">
-              {createPatient.isPending ? "Guardando..." : "Crear Paciente"}
+            <Button type="submit" disabled={updatePatient.isPending} className="w-full">
+              {updatePatient.isPending ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </form>
         </Form>
