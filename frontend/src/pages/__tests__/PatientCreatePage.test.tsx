@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import PatientCreatePage from '../PatientCreatePage'
 import * as patientsApi from '../../api/patients'
 import { makePatient } from '../../test/mocks'
+import { QueryWrapper } from '../../test/testUtils'
 
 vi.mock('../../api/patients')
 
@@ -19,9 +20,11 @@ vi.mock('react-router-dom', async () => {
 
 function renderPage() {
   return render(
-    <MemoryRouter>
-      <PatientCreatePage />
-    </MemoryRouter>
+    <QueryWrapper>
+      <MemoryRouter>
+        <PatientCreatePage />
+      </MemoryRouter>
+    </QueryWrapper>
   )
 }
 
@@ -31,6 +34,10 @@ beforeEach(() => {
 
 describe('PatientCreatePage', () => {
   it('muestra el formulario de creación', () => {
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
     renderPage()
 
     expect(screen.getByText('Nuevo Paciente')).toBeInTheDocument()
@@ -40,6 +47,10 @@ describe('PatientCreatePage', () => {
 
   it('muestra error si se envía sin nombre', async () => {
     const user = userEvent.setup()
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
     renderPage()
 
     await user.click(screen.getByText('Crear Paciente'))
@@ -49,6 +60,10 @@ describe('PatientCreatePage', () => {
 
   it('muestra error si se envía sin fecha', async () => {
     const user = userEvent.setup()
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
     renderPage()
 
     const nameInput = screen.getByRole('textbox')
@@ -61,7 +76,11 @@ describe('PatientCreatePage', () => {
   it('llama a createPatient y navega al detalle del paciente', async () => {
     const user = userEvent.setup()
     const patient = makePatient({ id: 7 })
-    vi.mocked(patientsApi.createPatient).mockResolvedValue(patient)
+    const mutateAsync = vi.fn().mockResolvedValue(patient)
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync,
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
 
     const { fireEvent } = await import('@testing-library/react')
     renderPage()
@@ -74,7 +93,7 @@ describe('PatientCreatePage', () => {
     await user.click(screen.getByText('Crear Paciente'))
 
     await waitFor(() => {
-      expect(patientsApi.createPatient).toHaveBeenCalledWith(
+      expect(mutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({ name: 'Juan Pérez' })
       )
       expect(mockNavigate).toHaveBeenCalledWith('/patients/7')
@@ -83,7 +102,11 @@ describe('PatientCreatePage', () => {
 
   it('muestra error cuando createPatient falla', async () => {
     const user = userEvent.setup()
-    vi.mocked(patientsApi.createPatient).mockRejectedValue(new Error('Error del servidor'))
+    const mutateAsync = vi.fn().mockRejectedValue(new Error('Error del servidor'))
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync,
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
 
     renderPage()
 
@@ -103,29 +126,21 @@ describe('PatientCreatePage', () => {
   })
 
   it('muestra "Guardando..." mientras se envía', async () => {
-    vi.mocked(patientsApi.createPatient).mockImplementation(
-      () => new Promise(() => {}) // never resolves
-    )
-
-    const { fireEvent } = await import('@testing-library/react')
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: true,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
 
     renderPage()
 
-    const nameInput = screen.getByRole('textbox')
-    fireEvent.change(nameInput, { target: { value: 'Juan' } })
-
-    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
-    fireEvent.change(dateInput, { target: { value: '2022-01-15' } })
-
-    const submitBtn = screen.getByText('Crear Paciente')
-    fireEvent.click(submitBtn)
-
-    await waitFor(() => {
-      expect(screen.getByText('Guardando...')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Guardando...')).toBeInTheDocument()
   })
 
   it('incluye el campo de edad gestacional opcional', () => {
+    vi.mocked(patientsApi.useCreatePatient).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof patientsApi.useCreatePatient>)
     renderPage()
     expect(screen.getByText(/Edad Gestacional/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Dejar vacío si término/)).toBeInTheDocument()

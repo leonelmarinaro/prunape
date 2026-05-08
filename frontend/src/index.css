@@ -1,23 +1,52 @@
-* {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: oklch(0.55 0.2 240);
+    --primary-foreground: oklch(0.98 0 0);
+    --success: oklch(0.55 0.18 145);
+    --success-foreground: oklch(0.98 0 0);
+    --danger: oklch(0.55 0.22 25);
+    --danger-foreground: oklch(0.98 0 0);
+    --warning: oklch(0.7 0.18 80);
+    --warning-foreground: oklch(0.2 0 0);
+    --muted: oklch(0.96 0 0);
+    --muted-foreground: oklch(0.45 0 0);
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.13 0 0);
+    --border: oklch(0.9 0 0);
+    --radius: 0.5rem;
+    /* Color aliases for shadcn compatibility */
+    --color-primary: var(--primary);
+    --color-success: var(--success);
+    --color-danger: var(--danger);
+    --color-warning: var(--warning);
+    --color-muted: var(--muted);
+  }
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #1f2937;
-  background: #f5f7fa;
-  -webkit-font-smoothing: antialiased;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-h1, h2, h3 {
-  margin-top: 0;
-}
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1f2937;
+    background: #f5f7fa;
+    -webkit-font-smoothing: antialiased;
+  }
 
-a {
-  color: #1a56db;
+  h1, h2, h3 {
+    margin-top: 0;
+  }
+
+  a {
+    color: #1a56db;
+  }
 }
 
 @media print {

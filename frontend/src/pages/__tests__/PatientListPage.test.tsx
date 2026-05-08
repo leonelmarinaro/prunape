@@ -5,14 +5,17 @@ import { MemoryRouter } from 'react-router-dom'
 import PatientListPage from '../PatientListPage'
 import * as patientsApi from '../../api/patients'
 import { makePatient } from '../../test/mocks'
+import { QueryWrapper } from '../../test/testUtils'
 
 vi.mock('../../api/patients')
 
 function renderPage() {
   return render(
-    <MemoryRouter>
-      <PatientListPage />
-    </MemoryRouter>
+    <QueryWrapper>
+      <MemoryRouter>
+        <PatientListPage />
+      </MemoryRouter>
+    </QueryWrapper>
   )
 }
 
@@ -22,7 +25,10 @@ beforeEach(() => {
 
 describe('PatientListPage', () => {
   it('muestra el estado de carga inicial', () => {
-    vi.mocked(patientsApi.listPatients).mockResolvedValue([])
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    } as ReturnType<typeof patientsApi.usePatients>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
@@ -32,7 +38,10 @@ describe('PatientListPage', () => {
       makePatient({ id: 1, name: 'Juan Pérez', birth_date: '2022-01-15' }),
       makePatient({ id: 2, name: 'María García', birth_date: '2021-05-10' }),
     ]
-    vi.mocked(patientsApi.listPatients).mockResolvedValue(patients)
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: patients,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -43,7 +52,10 @@ describe('PatientListPage', () => {
   })
 
   it('muestra mensaje cuando no hay pacientes', async () => {
-    vi.mocked(patientsApi.listPatients).mockResolvedValue([])
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -54,7 +66,10 @@ describe('PatientListPage', () => {
 
   it('muestra "Término" cuando gestational_age_weeks es null', async () => {
     const patients = [makePatient({ gestational_age_weeks: null })]
-    vi.mocked(patientsApi.listPatients).mockResolvedValue(patients)
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: patients,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -65,7 +80,10 @@ describe('PatientListPage', () => {
 
   it('muestra semanas gestacionales cuando están disponibles', async () => {
     const patients = [makePatient({ gestational_age_weeks: 34 })]
-    vi.mocked(patientsApi.listPatients).mockResolvedValue(patients)
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: patients,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -75,7 +93,10 @@ describe('PatientListPage', () => {
   })
 
   it('tiene un link para crear nuevo paciente', async () => {
-    vi.mocked(patientsApi.listPatients).mockResolvedValue([])
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -86,14 +107,20 @@ describe('PatientListPage', () => {
   })
 
   it('muestra input de búsqueda', () => {
-    vi.mocked(patientsApi.listPatients).mockResolvedValue([])
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
     renderPage()
     expect(screen.getByPlaceholderText('Buscar por nombre...')).toBeInTheDocument()
   })
 
   it('los pacientes tienen links a su detalle', async () => {
     const patients = [makePatient({ id: 5, name: 'Pedro López' })]
-    vi.mocked(patientsApi.listPatients).mockResolvedValue(patients)
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: patients,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -103,18 +130,21 @@ describe('PatientListPage', () => {
     })
   })
 
-  it('llama a listPatients con el término de búsqueda después del debounce', async () => {
+  it('llama a usePatients con el término de búsqueda después del debounce', async () => {
     const user = userEvent.setup({ delay: null })
-    vi.mocked(patientsApi.listPatients).mockResolvedValue([])
+    vi.mocked(patientsApi.usePatients).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
-    await waitFor(() => expect(patientsApi.listPatients).toHaveBeenCalledWith(''))
+    expect(patientsApi.usePatients).toHaveBeenCalledWith('')
 
     const input = screen.getByPlaceholderText('Buscar por nombre...')
     await user.type(input, 'Juan')
 
     await waitFor(
-      () => expect(patientsApi.listPatients).toHaveBeenCalledWith('Juan'),
+      () => expect(patientsApi.usePatients).toHaveBeenCalledWith('Juan'),
       { timeout: 1000 }
     )
   })

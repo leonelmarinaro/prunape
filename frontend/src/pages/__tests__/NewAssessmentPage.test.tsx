@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import NewAssessmentPage from '../NewAssessmentPage'
 import * as patientsApi from '../../api/patients'
 import * as assessmentsApi from '../../api/assessments'
 import { makePatientDetail, makeAgeCalculation, makeAssessment, makeApplicablePauta } from '../../test/mocks'
+import { QueryWrapper } from '../../test/testUtils'
 
 vi.mock('../../api/patients')
 vi.mock('../../api/assessments')
@@ -21,11 +22,13 @@ vi.mock('react-router-dom', async () => {
 
 function renderPage(id = '1') {
   return render(
-    <MemoryRouter initialEntries={[`/patients/${id}/assess`]}>
-      <Routes>
-        <Route path="/patients/:id/assess" element={<NewAssessmentPage />} />
-      </Routes>
-    </MemoryRouter>
+    <QueryWrapper>
+      <MemoryRouter initialEntries={[`/patients/${id}/assess`]}>
+        <Routes>
+          <Route path="/patients/:id/assess" element={<NewAssessmentPage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryWrapper>
   )
 }
 
@@ -35,14 +38,36 @@ beforeEach(() => {
 
 describe('NewAssessmentPage', () => {
   it('muestra cargando mientras se obtiene el paciente', () => {
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(makePatientDetail())
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
 
   it('muestra el nombre del paciente en el título', async () => {
     const detail = makePatientDetail({ name: 'Ana Sosa' })
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(detail)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: detail,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
 
@@ -52,7 +77,18 @@ describe('NewAssessmentPage', () => {
   })
 
   it('muestra el paso inicial con fecha y botón Comenzar', async () => {
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(makePatientDetail())
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: makePatientDetail(),
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
 
@@ -69,8 +105,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, name: 'Sostiene cabeza', area: 'Motor Grueso' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
 
@@ -92,8 +139,19 @@ describe('NewAssessmentPage', () => {
       ],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -111,8 +169,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, area: 'Motor Grueso' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -131,8 +200,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, area: 'Motor Grueso', name: 'Sostiene cabeza' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -158,9 +238,20 @@ describe('NewAssessmentPage', () => {
     })
     const assessment = makeAssessment({ id: 99 })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
-    vi.mocked(assessmentsApi.createAssessment).mockResolvedValue(assessment)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    const mutateAsyncCreate = vi.fn().mockResolvedValue(assessment)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: mutateAsyncCreate,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage('1')
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -180,8 +271,19 @@ describe('NewAssessmentPage', () => {
 
   it('muestra error cuando calculateAge falla', async () => {
     const user = userEvent.setup()
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(makePatientDetail())
-    vi.mocked(assessmentsApi.calculateAge).mockRejectedValue(new Error('Error de cálculo'))
+    const mutateAsyncCalcAge = vi.fn().mockRejectedValue(new Error('Error de cálculo'))
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: makePatientDetail(),
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -199,8 +301,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, area: 'Motor Grueso', name: 'Sostiene cabeza' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -224,8 +337,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, area: 'Motor Grueso' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))
@@ -245,8 +369,19 @@ describe('NewAssessmentPage', () => {
       applicable_pautas: [makeApplicablePauta({ id: 1, area: 'Motor Grueso' })],
     })
 
-    vi.mocked(patientsApi.getPatient).mockResolvedValue(patient)
-    vi.mocked(assessmentsApi.calculateAge).mockResolvedValue(ageCalc)
+    const mutateAsyncCalcAge = vi.fn().mockResolvedValue(ageCalc)
+    vi.mocked(patientsApi.usePatient).mockReturnValue({
+      data: patient,
+      isLoading: false,
+    } as ReturnType<typeof patientsApi.usePatient>)
+    vi.mocked(assessmentsApi.useCalculateAge).mockReturnValue({
+      mutateAsync: mutateAsyncCalcAge,
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCalculateAge>)
+    vi.mocked(assessmentsApi.useCreateAssessment).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof assessmentsApi.useCreateAssessment>)
 
     renderPage()
     await waitFor(() => screen.getByText('Comenzar Evaluación'))

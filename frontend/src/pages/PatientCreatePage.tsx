@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPatient } from "../api/patients";
+import { useCreatePatient } from "../api/patients";
 
 export default function PatientCreatePage() {
   const navigate = useNavigate();
@@ -8,7 +8,8 @@ export default function PatientCreatePage() {
   const [birthDate, setBirthDate] = useState("");
   const [gestWeeks, setGestWeeks] = useState<string>("");
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+
+  const createPatient = useCreatePatient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,18 +18,15 @@ export default function PatientCreatePage() {
       setError("Nombre y fecha de nacimiento son obligatorios.");
       return;
     }
-    setSubmitting(true);
     try {
-      const patient = await createPatient({
+      const patient = await createPatient.mutateAsync({
         name: name.trim(),
         birth_date: birthDate,
         gestational_age_weeks: gestWeeks ? parseInt(gestWeeks) : null,
       });
       navigate(`/patients/${patient.id}`);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al crear paciente");
     }
   };
 
@@ -69,7 +67,7 @@ export default function PatientCreatePage() {
         {error && <p style={{ color: "red", margin: 0 }}>{error}</p>}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={createPatient.isPending}
           style={{
             background: "#1a56db",
             color: "white",
@@ -80,7 +78,7 @@ export default function PatientCreatePage() {
             fontSize: "1rem",
           }}
         >
-          {submitting ? "Guardando..." : "Crear Paciente"}
+          {createPatient.isPending ? "Guardando..." : "Crear Paciente"}
         </button>
       </form>
     </div>

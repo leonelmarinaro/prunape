@@ -5,16 +5,19 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import AssessmentResultPage from '../AssessmentResultPage'
 import * as assessmentsApi from '../../api/assessments'
 import { makeAssessment, makePauta, makeAssessmentItem } from '../../test/mocks'
+import { QueryWrapper } from '../../test/testUtils'
 
 vi.mock('../../api/assessments')
 
 function renderPage(id = '1') {
   return render(
-    <MemoryRouter initialEntries={[`/assessments/${id}`]}>
-      <Routes>
-        <Route path="/assessments/:id" element={<AssessmentResultPage />} />
-      </Routes>
-    </MemoryRouter>
+    <QueryWrapper>
+      <MemoryRouter initialEntries={[`/assessments/${id}`]}>
+        <Routes>
+          <Route path="/assessments/:id" element={<AssessmentResultPage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryWrapper>
   )
 }
 
@@ -24,16 +27,28 @@ beforeEach(() => {
 
 describe('AssessmentResultPage', () => {
   it('muestra cargando inicialmente', () => {
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(makeAssessment())
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
 
   it('muestra el resultado de la evaluación', async () => {
     const assessment = makeAssessment({ result: 'PASA' })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -44,8 +59,14 @@ describe('AssessmentResultPage', () => {
 
   it('muestra PASA cuando el resultado es PASA', async () => {
     const assessment = makeAssessment({ result: 'PASA' })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -57,8 +78,14 @@ describe('AssessmentResultPage', () => {
   it('muestra NO PASA cuando el resultado es NO_PASA', async () => {
     const failedItem = makeAssessmentItem({ passed: false, pauta_type: 'A' })
     const assessment = makeAssessment({ result: 'NO_PASA', items: [failedItem] })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -69,8 +96,14 @@ describe('AssessmentResultPage', () => {
 
   it('muestra la edad cronológica', async () => {
     const assessment = makeAssessment({ chronological_age: 3.25, corrected_age: null })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -81,8 +114,14 @@ describe('AssessmentResultPage', () => {
 
   it('muestra la edad corregida cuando existe', async () => {
     const assessment = makeAssessment({ chronological_age: 3.0, corrected_age: 2.5 })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -94,8 +133,14 @@ describe('AssessmentResultPage', () => {
   it('muestra el gráfico de percentiles cuando hay pautas', async () => {
     const assessment = makeAssessment()
     const pautas = [makePauta({ area: 'Motor Grueso' })]
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue(pautas)
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: pautas,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -106,8 +151,14 @@ describe('AssessmentResultPage', () => {
 
   it('no muestra el gráfico cuando no hay pautas', async () => {
     const assessment = makeAssessment()
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -118,8 +169,14 @@ describe('AssessmentResultPage', () => {
 
   it('tiene link de vuelta al paciente', async () => {
     const assessment = makeAssessment({ patient_id: 5 })
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -131,8 +188,14 @@ describe('AssessmentResultPage', () => {
 
   it('tiene botón de imprimir', async () => {
     const assessment = makeAssessment()
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -141,14 +204,20 @@ describe('AssessmentResultPage', () => {
     })
   })
 
-  it('llama a getAssessment con el id de la ruta', async () => {
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(makeAssessment())
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+  it('llama a useAssessment con el id de la ruta', async () => {
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: makeAssessment(),
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage('42')
 
     await waitFor(() => {
-      expect(assessmentsApi.getAssessment).toHaveBeenCalledWith(42)
+      expect(assessmentsApi.useAssessment).toHaveBeenCalledWith(42)
     })
   })
 
@@ -158,8 +227,14 @@ describe('AssessmentResultPage', () => {
     window.print = printMock
 
     const assessment = makeAssessment()
-    vi.mocked(assessmentsApi.getAssessment).mockResolvedValue(assessment)
-    vi.mocked(assessmentsApi.getAllPautas).mockResolvedValue([])
+    vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
+      data: assessment,
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    vi.mocked(assessmentsApi.usePautas).mockReturnValue({
+      data: [],
+      isLoading: false,
+    } as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getPatient } from "../api/patients";
-import { calculateAge, createAssessment } from "../api/assessments";
-import type { Patient, ApplicablePauta, AssessmentItemInput } from "../types";
+import { usePatient } from "../api/patients";
+import { useCalculateAge, useCreateAssessment } from "../api/assessments";
+import type { ApplicablePauta, AssessmentItemInput } from "../types";
 import PautaCard from "../components/PautaCard";
 
 type Step = "date" | "evaluate" | "review";
@@ -12,27 +12,25 @@ const AREAS = ["Personal Social", "Motor Fino", "Lenguaje", "Motor Grueso"];
 export default function NewAssessmentPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [patient, setPatient] = useState<Patient | null>(null);
+  const patientId = id ? parseInt(id) : undefined;
+
+  const { data: patient } = usePatient(patientId);
+  const calculateAge = useCalculateAge();
+  const createAssessment = useCreateAssessment();
+
   const [step, setStep] = useState<Step>("date");
   const [assessmentDate, setAssessmentDate] = useState(new Date().toISOString().split("T")[0]);
   const [pautas, setPautas] = useState<ApplicablePauta[]>([]);
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [chronoAge, setChronoAge] = useState<number | null>(null);
   const [correctedAge, setCorrectedAge] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (id) {
-      getPatient(parseInt(id)).then(setPatient);
-    }
-  }, [id]);
 
   const handleCalculateAge = async () => {
     if (!id) return;
     setError("");
     try {
-      const result = await calculateAge({
+      const result = await calculateAge.mutateAsync({
         patient_id: parseInt(id),
         assessment_date: assessmentDate,
       });
@@ -40,8 +38,8 @@ export default function NewAssessmentPage() {
       setChronoAge(result.chronological_age);
       setCorrectedAge(result.corrected_age);
       setStep("evaluate");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al calcular la edad");
     }
   };
 
@@ -53,23 +51,20 @@ export default function NewAssessmentPage() {
 
   const handleSubmit = async () => {
     if (!id) return;
-    setSubmitting(true);
     setError("");
     try {
       const items: AssessmentItemInput[] = pautas.map((p) => ({
         pauta_id: p.id,
         passed: answers[p.id],
       }));
-      const assessment = await createAssessment({
+      const assessment = await createAssessment.mutateAsync({
         patient_id: parseInt(id),
         assessment_date: assessmentDate,
         items,
       });
       navigate(`/assessments/${assessment.id}`);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al guardar la evaluación");
     }
   };
 
@@ -211,7 +206,7 @@ export default function NewAssessmentPage() {
             </button>
             <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={createAssessment.isPending}
               style={{
                 background: "#059669",
                 color: "white",
@@ -221,7 +216,7 @@ export default function NewAssessmentPage() {
                 cursor: "pointer",
               }}
             >
-              {submitting ? "Guardando..." : "Confirmar Evaluación"}
+              {createAssessment.isPending ? "Guardando..." : "Confirmar Evaluación"}
             </button>
           </div>
         </div>

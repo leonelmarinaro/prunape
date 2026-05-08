@@ -1,27 +1,16 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getAssessment } from "../api/assessments";
-import { getAllPautas } from "../api/assessments";
-import type { Assessment, Pauta } from "../types";
+import { useAssessment, usePautas } from "../api/assessments";
 import ResultSummary from "../components/ResultSummary";
 import PercentileChart from "../components/PercentileChart";
 
 export default function AssessmentResultPage() {
   const { id } = useParams<{ id: string }>();
-  const [assessment, setAssessment] = useState<Assessment | null>(null);
-  const [allPautas, setAllPautas] = useState<Pauta[]>([]);
-  const [loading, setLoading] = useState(true);
+  const assessmentId = id ? parseInt(id) : undefined;
 
-  useEffect(() => {
-    if (id) {
-      Promise.all([getAssessment(parseInt(id)), getAllPautas()])
-        .then(([a, p]) => {
-          setAssessment(a);
-          setAllPautas(p);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [id]);
+  const { data: assessment, isLoading: loadingAssessment } = useAssessment(assessmentId);
+  const { data: allPautas = [], isLoading: loadingPautas } = usePautas();
+
+  const loading = loadingAssessment || loadingPautas;
 
   if (loading) return <p>Cargando...</p>;
   if (!assessment) return <p>Evaluación no encontrada.</p>;

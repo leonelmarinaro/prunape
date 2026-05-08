@@ -1,22 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { listPatients } from "../api/patients";
-import type { Patient } from "../types";
+import { usePatients } from "../api/patients";
+import { useDebounce } from "../hooks/useDebounce";
 
 export default function PatientListPage() {
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(true);
-      listPatients(search)
-        .then(setPatients)
-        .finally(() => setLoading(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const debouncedSearch = useDebounce(search, 300);
+  const { data: patients = [], isLoading: loading } = usePatients(debouncedSearch);
 
   return (
     <div>

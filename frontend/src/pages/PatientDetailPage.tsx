@@ -1,20 +1,10 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getPatient } from "../api/patients";
-import type { PatientDetail } from "../types";
+import { usePatient } from "../api/patients";
 
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [patient, setPatient] = useState<PatientDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (id) {
-      getPatient(parseInt(id))
-        .then(setPatient)
-        .finally(() => setLoading(false));
-    }
-  }, [id]);
+  const patientId = id ? parseInt(id) : undefined;
+  const { data: patient, isLoading: loading } = usePatient(patientId);
 
   if (loading) return <p>Cargando...</p>;
   if (!patient) return <p>Paciente no encontrado.</p>;
