@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { StepIndicator } from "@/components/ui/StepIndicator"
 import { AvatarInitials } from "@/components/ui/AvatarInitials"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@clerk/clerk-react"
 
@@ -127,7 +126,6 @@ export default function NewAssessmentPage() {
   const allAnswered =
     pautas.length > 0 && pautas.every((p) => responses[p.id] !== undefined)
   const answeredCount = Object.keys(responses).length
-  const progressPct = pautas.length > 0 ? (answeredCount / pautas.length) * 100 : 0
 
   const handleSubmit = async () => {
     if (!id) return
@@ -214,209 +212,219 @@ export default function NewAssessmentPage() {
   }
 
   function StepEvaluacion() {
+    const progressPct = pautas.length > 0 ? Math.round((answeredCount / pautas.length) * 100) : 0
+
     return (
-      <div className="mt-4 space-y-4">
-            {/* Resumen de edad */}
-            <div className="bg-white rounded-lg p-4 border border-[var(--border)]">
-              <p className="text-sm">
-                <strong>Edad Cronológica:</strong>{" "}
-                {chronoAge?.toFixed(2)} años
-                {correctedAge != null && (
-                  <>
-                    {" "}
-                    |{" "}
-                    <strong>Edad Corregida:</strong>{" "}
-                    {correctedAge.toFixed(2)} años
-                  </>
-                )}
-              </p>
-              <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                Total: {pautas.length} pautas | Respondidas: {answeredCount}
-              </p>
-              <Progress
-                value={progressPct}
-                className="mt-2 h-2"
-                aria-label={`Progreso: ${answeredCount} de ${pautas.length} pautas respondidas`}
-              />
+      <div className="space-y-3">
+        {/* Progress */}
+        <div className="bg-white rounded-lg p-3.5 border border-[var(--border)] flex items-center gap-4">
+          <div className="flex-1">
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="font-medium text-[var(--muted-foreground)]">
+                {answeredCount} / {pautas.length} pautas
+              </span>
             </div>
+            <Progress
+              value={progressPct}
+              className="h-2"
+              aria-label={`Progreso: ${answeredCount} de ${pautas.length} pautas respondidas`}
+            />
+          </div>
+          <div className="text-2xl font-extrabold text-[var(--primary-accent)] w-12 text-right">
+            {progressPct}%
+          </div>
+        </div>
 
-            {/* Pautas por área */}
-            {AREAS.map((area) => {
-              const areaPautas = pautas.filter((p) => p.area === area)
-              if (areaPautas.length === 0) return null
-              const areaCompleted = areaPautas.filter(
-                (p) => responses[p.id] !== undefined
-              ).length
+        {/* Edad */}
+        <div className="text-xs text-[var(--muted-foreground)] px-1">
+          <strong>Edad Cronológica:</strong> {chronoAge?.toFixed(2)} años
+          {correctedAge != null && (
+            <> · <strong>Edad Corregida:</strong> {correctedAge.toFixed(2)} años</>
+          )}
+        </div>
 
-              return (
-                <details key={area} open className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
-                  <summary className="flex items-center justify-between px-4 py-3 cursor-pointer font-semibold text-sm select-none hover:bg-[var(--muted)]">
-                    <span>{area}</span>
-                    <span className="text-[var(--muted-foreground)] font-normal">
-                      {areaCompleted}/{areaPautas.length}
-                    </span>
-                  </summary>
-                  <div className="divide-y divide-[var(--border)]">
-                    {areaPautas.map((pauta) => {
-                      const resp = responses[pauta.id]
-                      return (
-                        <div
-                          key={pauta.id}
+        {/* Pautas por área */}
+        {AREAS.map((area) => {
+          const areaPautas = pautas.filter((p) => p.area === area)
+          if (areaPautas.length === 0) return null
+          const areaAnswered = areaPautas.filter((p) => responses[p.id] !== undefined).length
+          const areaCompleted = areaAnswered === areaPautas.length
+          const areaActive = !areaCompleted && areaPautas.some((p) => responses[p.id] !== undefined)
+
+          return (
+            <details
+              key={area}
+              open={!areaCompleted}
+              className={cn(
+                "rounded-lg border overflow-hidden",
+                areaCompleted && "border-green-200",
+                areaActive && "border-[1.5px] border-blue-300",
+                !areaCompleted && !areaActive && "border-[var(--border)]"
+              )}
+            >
+              <summary
+                className={cn(
+                  "flex items-center justify-between px-4 py-2.5 cursor-pointer select-none text-sm font-semibold",
+                  areaCompleted && "bg-green-50 text-green-800",
+                  areaActive && "bg-blue-50 text-[var(--primary)]",
+                  !areaCompleted && !areaActive && "bg-white text-[var(--foreground)] opacity-70"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    areaCompleted && "bg-green-500",
+                    areaActive && "bg-[var(--primary-accent)]",
+                    !areaCompleted && !areaActive && "bg-slate-300"
+                  )} />
+                  {area}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-normal text-xs">
+                    {areaAnswered}/{areaPautas.length}
+                  </span>
+                  {areaCompleted && (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M2 7l3.5 3.5L12 3" stroke="#16a34a" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  )}
+                </div>
+              </summary>
+
+              <div className="divide-y divide-[var(--border)] bg-white">
+                {areaPautas.map((pauta) => {
+                  const resp = responses[pauta.id]
+                  return (
+                    <div
+                      key={pauta.id}
+                      className={cn(
+                        "flex items-center justify-between px-4 py-2.5 gap-4",
+                        resp === true && "bg-green-50",
+                        resp === false && "bg-red-50",
+                        resp === undefined && "bg-white"
+                      )}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{pauta.name}</span>
+                          <span className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded font-semibold",
+                            pauta.pauta_type === "A"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          )}>
+                            Tipo {pauta.pauta_type}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleResponse(pauta.id, true)}
+                          aria-pressed={resp === true}
                           className={cn(
-                            "flex items-center justify-between px-4 py-3 gap-4",
-                            resp !== undefined && "bg-gray-50"
+                            "px-3 py-1.5 rounded-md text-xs font-semibold transition-colors",
+                            resp === true
+                              ? "bg-green-600 text-white"
+                              : "border-2 border-green-600 text-green-700 bg-white hover:bg-green-50"
                           )}
                         >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-sm">{pauta.name}</span>
-                              <span
-                                className={cn(
-                                  "text-xs px-2 py-0.5 rounded-full font-medium",
-                                  pauta.pauta_type === "A"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-yellow-100 text-yellow-700"
-                                )}
-                              >
-                                Tipo {pauta.pauta_type}
-                              </span>
-                            </div>
-                            <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                              P75: {pauta.p75.toFixed(2)} | P90:{" "}
-                              {pauta.p90.toFixed(2)}
-                            </div>
-                          </div>
-                          <ToggleGroup
-                            type="single"
-                            value={
-                              resp !== undefined ? resp.toString() : ""
-                            }
-                            onValueChange={(v) => {
-                              if (v !== "") handleResponse(pauta.id, v === "true")
-                            }}
-                            aria-label={pauta.name}
-                            variant="outline"
-                            size="sm"
-                          >
-                            <ToggleGroupItem
-                              value="true"
-                              aria-label="Cumple"
-                              className={cn(
-                                resp === true &&
-                                  "bg-green-600 text-white border-green-600 data-[state=on]:bg-green-600 data-[state=on]:text-white"
-                              )}
-                            >
-                              Cumple
-                            </ToggleGroupItem>
-                            <ToggleGroupItem
-                              value="false"
-                              aria-label="No cumple"
-                              className={cn(
-                                resp === false &&
-                                  "bg-red-600 text-white border-red-600 data-[state=on]:bg-red-600 data-[state=on]:text-white"
-                              )}
-                            >
-                              No cumple
-                            </ToggleGroupItem>
-                          </ToggleGroup>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </details>
-              )
-            })}
+                          Cumple
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResponse(pauta.id, false)}
+                          aria-pressed={resp === false}
+                          className={cn(
+                            "px-3 py-1.5 rounded-md text-xs font-semibold transition-colors",
+                            resp === false
+                              ? "bg-red-600 text-white"
+                              : "border-2 border-red-600 text-red-700 bg-white hover:bg-red-50"
+                          )}
+                        >
+                          No cumple
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </details>
+          )
+        })}
 
-            {error && (
-              <p className="text-red-600 text-sm" role="alert">
-                {error}
-              </p>
-            )}
+        {error && <p className="text-red-600 text-sm" role="alert">{error}</p>}
 
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentStep(1)}
-              >
-                Volver
-              </Button>
-              <Button
-                onClick={() => setCurrentStep(3)}
-                disabled={!allAnswered}
-              >
-                Revisar y Enviar
-              </Button>
-            </div>
-          </div>
+        <div className="flex gap-3 pt-1">
+          <Button variant="outline" onClick={() => setCurrentStep(1)}>Volver</Button>
+          <Button
+            onClick={() => setCurrentStep(3)}
+            disabled={!allAnswered}
+            className="bg-[var(--primary-accent)] hover:opacity-90 text-white"
+          >
+            Revisar y Enviar
+          </Button>
+        </div>
+      </div>
     )
   }
 
   function StepRevision() {
     return (
-      <div className="mt-4 space-y-4">
-            <div className="bg-white rounded-lg p-6 border border-[var(--border)]">
-              <h2 className="text-lg font-semibold mb-4">Resumen de Respuestas</h2>
-
-              {AREAS.map((area) => {
-                const areaPautas = pautas.filter((p) => p.area === area)
-                if (areaPautas.length === 0) return null
-                return (
-                  <div key={area} className="mb-5">
-                    <h3 className="font-semibold text-sm text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-                      {area}
-                    </h3>
-                    <div className="space-y-1">
-                      {areaPautas.map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex items-center gap-3 text-sm py-1"
-                        >
-                          <span
-                            className={cn(
-                              "font-semibold min-w-[90px]",
-                              responses[p.id]
-                                ? "text-green-700"
-                                : "text-red-700"
-                            )}
-                          >
-                            {responses[p.id] ? "Cumple" : "No cumple"}
-                          </span>
-                          <span className="flex-1">{p.name}</span>
-                          <span className="text-[var(--muted-foreground)]">
-                            Tipo {p.pauta_type}
-                          </span>
-                        </div>
-                      ))}
+      <div className="space-y-4">
+        <div className="bg-white rounded-lg p-5 border border-[var(--border)]">
+          <h2 className="text-base font-semibold mb-4">Resumen de Respuestas</h2>
+          {AREAS.map((area) => {
+            const areaPautas = pautas.filter((p) => p.area === area)
+            if (areaPautas.length === 0) return null
+            return (
+              <div key={area} className="mb-5">
+                <h3 className="font-semibold text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
+                  {area}
+                </h3>
+                <div className="space-y-1">
+                  {areaPautas.map((p) => (
+                    <div
+                      key={p.id}
+                      className={cn(
+                        "flex items-center gap-3 text-sm py-1.5 px-2 rounded",
+                        responses[p.id] ? "bg-green-50" : "bg-red-50"
+                      )}
+                    >
+                      <span className={cn(
+                        "text-xs font-bold min-w-[72px]",
+                        responses[p.id] ? "text-green-700" : "text-red-700"
+                      )}>
+                        {responses[p.id] ? "Cumple" : "No cumple"}
+                      </span>
+                      <span className="flex-1 text-[var(--foreground)]">{p.name}</span>
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded font-semibold",
+                        p.pauta_type === "A" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+                      )}>
+                        Tipo {p.pauta_type}
+                      </span>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
 
-            {error && (
-              <p className="text-red-600 text-sm" role="alert">
-                {error}
-              </p>
-            )}
+        {error && <p className="text-red-600 text-sm" role="alert">{error}</p>}
 
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentStep(2)}
-              >
-                Volver a Editar
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={createAssessment.isPending}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                {createAssessment.isPending
-                  ? "Guardando..."
-                  : "Confirmar Evaluación"}
-              </Button>
-            </div>
-          </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setCurrentStep(2)}>Volver a Editar</Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={createAssessment.isPending}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            {createAssessment.isPending ? "Guardando..." : "Confirmar Evaluación"}
+          </Button>
+        </div>
+      </div>
     )
   }
 
