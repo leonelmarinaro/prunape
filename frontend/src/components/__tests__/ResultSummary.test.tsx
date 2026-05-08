@@ -4,18 +4,11 @@ import ResultSummary from '../ResultSummary'
 import { makeAssessment, makeAssessmentItem } from '../../test/mocks'
 
 describe('ResultSummary - PASA', () => {
-  it('muestra PASA cuando el resultado es PASA', () => {
+  it('no renderiza nada cuando el resultado es PASA', () => {
     const assessment = makeAssessment({ result: 'PASA' })
-    render(<ResultSummary assessment={assessment} />)
+    const { container } = render(<ResultSummary assessment={assessment} />)
 
-    expect(screen.getByText('PASA')).toBeInTheDocument()
-  })
-
-  it('muestra mensaje de control en próxima visita', () => {
-    const assessment = makeAssessment({ result: 'PASA' })
-    render(<ResultSummary assessment={assessment} />)
-
-    expect(screen.getByText(/El niño aprueba la pesquisa/)).toBeInTheDocument()
+    expect(container).toBeEmptyDOMElement()
   })
 
   it('no muestra fallas cuando PASA', () => {
@@ -28,11 +21,11 @@ describe('ResultSummary - PASA', () => {
 })
 
 describe('ResultSummary - NO PASA', () => {
-  it('muestra NO PASA cuando el resultado no es PASA', () => {
-    const assessment = makeAssessment({ result: 'NO_PASA' })
-    render(<ResultSummary assessment={assessment} />)
+  it('no renderiza nada si NO PASA pero no hay items fallidos', () => {
+    const assessment = makeAssessment({ result: 'NO_PASA', items: [] })
+    const { container } = render(<ResultSummary assessment={assessment} />)
 
-    expect(screen.getByText('NO PASA')).toBeInTheDocument()
+    expect(container).toBeEmptyDOMElement()
   })
 
   it('muestra fallas tipo A', () => {
@@ -73,14 +66,6 @@ describe('ResultSummary - NO PASA', () => {
     expect(screen.getByText(/Patea pelota/)).toBeInTheDocument()
   })
 
-  it('muestra recomendación de derivación', () => {
-    const failedItem = makeAssessmentItem({ passed: false })
-    const assessment = makeAssessment({ result: 'NO_PASA', items: [failedItem] })
-    render(<ResultSummary assessment={assessment} />)
-
-    expect(screen.getByText(/Se recomienda derivar/)).toBeInTheDocument()
-  })
-
   it('muestra el área junto al nombre de la falla', () => {
     const failedItem = makeAssessmentItem({
       pauta_name: 'Camina solo',
@@ -91,7 +76,8 @@ describe('ResultSummary - NO PASA', () => {
     const assessment = makeAssessment({ result: 'NO_PASA', items: [failedItem] })
     render(<ResultSummary assessment={assessment} />)
 
-    expect(screen.getByText(/Camina solo \(Motor Grueso\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Camina solo/)).toBeInTheDocument()
+    expect(screen.getByText(/Motor Grueso/)).toBeInTheDocument()
   })
 
   it('no muestra fallas tipo A si todos pasaron', () => {

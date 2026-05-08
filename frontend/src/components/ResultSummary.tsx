@@ -1,77 +1,57 @@
-import type { Assessment } from "../types";
+import type { Assessment } from "../types"
+import { cn } from "@/lib/utils"
 
 interface Props {
-  assessment: Assessment;
+  assessment: Assessment
 }
 
 export default function ResultSummary({ assessment }: Props) {
-  const passed = assessment.result === "PASA";
-  const failedItems = assessment.items.filter((i) => !i.passed);
-  const typeAFailures = failedItems.filter((i) => i.pauta_type === "A");
-  const typeBFailures = failedItems.filter((i) => i.pauta_type === "B");
+  const passed = assessment.result === "PASA"
+  const failedItems = assessment.items.filter((i) => !i.passed)
+  const typeAFailures = failedItems.filter((i) => i.pauta_type === "A")
+  const typeBFailures = failedItems.filter((i) => i.pauta_type === "B")
+
+  if (passed || failedItems.length === 0) return null
 
   return (
-    <div
-      style={{
-        background: passed ? "#d1fae5" : "#fee2e2",
-        border: `2px solid ${passed ? "#059669" : "#dc2626"}`,
-        borderRadius: 12,
-        padding: 24,
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "2rem",
-          fontWeight: 700,
-          color: passed ? "#065f46" : "#991b1b",
-          marginBottom: 8,
-        }}
-      >
-        {passed ? "PASA" : "NO PASA"}
+    <div className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
+      <div className="px-4 py-3 border-b border-[var(--border)]">
+        <span className="text-sm font-semibold text-[var(--foreground)]">Detalle de fallas</span>
       </div>
-
-      {!passed && (
-        <div style={{ textAlign: "left", marginTop: 16 }}>
-          {typeAFailures.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <strong style={{ color: "#991b1b" }}>
-                Fallas Tipo A (por encima de P90):
-              </strong>
-              <ul style={{ margin: "4px 0" }}>
-                {typeAFailures.map((i) => (
-                  <li key={i.id}>
-                    {i.pauta_name} ({i.area})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {typeBFailures.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <strong style={{ color: "#92400e" }}>
-                Fallas Tipo B (entre P75-P90):
-              </strong>
-              <ul style={{ margin: "4px 0" }}>
-                {typeBFailures.map((i) => (
-                  <li key={i.id}>
-                    {i.pauta_name} ({i.area})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <p style={{ color: "#991b1b", fontStyle: "italic", marginTop: 16 }}>
-            Se recomienda derivar para evaluación diagnóstica completa del desarrollo.
-          </p>
-        </div>
-      )}
-
-      {passed && (
-        <p style={{ color: "#065f46" }}>
-          El niño aprueba la pesquisa. Se recomienda control en la próxima visita pediátrica.
-        </p>
-      )}
+      <div className="p-4 space-y-4 text-sm">
+        {typeAFailures.length > 0 && (
+          <div>
+            <p className="font-semibold text-slate-700 mb-1.5">
+              Fallas Tipo A <span className="text-xs text-[var(--muted-foreground)] font-normal">(por encima de P90)</span>
+            </p>
+            <ul className="space-y-1">
+              {typeAFailures.map((i) => (
+                <li key={i.id} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                  <span className="text-[var(--foreground)]">{i.pauta_name}</span>
+                  <span className="text-xs text-[var(--muted-foreground)]">({i.area})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {typeBFailures.length > 0 && (
+          <div>
+            <p className="font-semibold text-slate-700 mb-1.5">
+              Fallas Tipo B <span className="text-xs text-[var(--muted-foreground)] font-normal">(entre P75-P90)</span>
+            </p>
+            <ul className="space-y-1">
+              {typeBFailures.map((i) => (
+                <li key={i.id} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />
+                  <span className="text-[var(--foreground)]">{i.pauta_name}</span>
+                  <span className="text-xs text-[var(--muted-foreground)]">({i.area})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
-  );
+  )
 }
