@@ -28,7 +28,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
@@ -41,7 +41,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: patients,
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -55,7 +55,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -69,7 +69,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: patients,
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -83,7 +83,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: patients,
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -96,7 +96,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -110,7 +110,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
     renderPage()
     expect(screen.getByPlaceholderText('Buscar por nombre...')).toBeInTheDocument()
   })
@@ -120,7 +120,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: patients,
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
 
@@ -135,7 +135,7 @@ describe('PatientListPage', () => {
     vi.mocked(patientsApi.usePatients).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof patientsApi.usePatients>)
+    } as unknown as ReturnType<typeof patientsApi.usePatients>)
 
     renderPage()
     expect(patientsApi.usePatients).toHaveBeenCalledWith('')

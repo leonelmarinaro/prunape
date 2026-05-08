@@ -30,11 +30,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
     renderPage()
     expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
@@ -44,11 +44,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -62,11 +62,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -81,11 +81,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -99,11 +99,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -117,11 +117,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -136,11 +136,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: pautas,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -154,11 +154,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -172,11 +172,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -191,11 +191,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 
@@ -208,11 +208,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: makeAssessment(),
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage('42')
 
@@ -230,11 +230,11 @@ describe('AssessmentResultPage', () => {
     vi.mocked(assessmentsApi.useAssessment).mockReturnValue({
       data: assessment,
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.useAssessment>)
+    } as unknown as ReturnType<typeof assessmentsApi.useAssessment>)
     vi.mocked(assessmentsApi.usePautas).mockReturnValue({
       data: [],
       isLoading: false,
-    } as ReturnType<typeof assessmentsApi.usePautas>)
+    } as unknown as ReturnType<typeof assessmentsApi.usePautas>)
 
     renderPage()
 

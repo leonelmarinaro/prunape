@@ -2,18 +2,18 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import "./index.css";
 import App from "./App.tsx";
 import { queryClient } from "@/api/queryClient";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-function ErrorFallback({ error }: { error: Error }) {
+function ErrorFallback({ error }: FallbackProps) {
   return (
     <div role="alert" style={{ padding: "2rem", textAlign: "center" }}>
       <h2>Ocurrió un error inesperado</h2>
-      <pre style={{ color: "red", fontSize: "0.875rem" }}>{error.message}</pre>
+      <pre style={{ color: "red", fontSize: "0.875rem" }}>{(error as Error).message}</pre>
     </div>
   );
 }
