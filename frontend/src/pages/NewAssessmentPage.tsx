@@ -253,7 +253,7 @@ export default function NewAssessmentPage() {
 
           return (
             <details
-              key={area}
+              key={`${area}-${areaCompleted ? 'done' : 'open'}`}
               open={!areaCompleted}
               className={cn(
                 "rounded-lg border overflow-hidden",
