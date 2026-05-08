@@ -8,6 +8,9 @@ dependencies = [
     "sqlalchemy>=2.0.0",
     "httpx>=0.24.0",
     "pydantic>=2.0.0",
+    "pydantic-settings>=2.0",
+    "alembic>=1.12",
+    "psycopg[binary]>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -23,7 +26,10 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["backend"]
-omit = ["backend/assessment.py"]
+omit = [
+    "backend/assessment.py",
+    "backend/migrations/*",
+]
 
 [tool.coverage.report]
 exclude_lines = [

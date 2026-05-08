@@ -23,6 +23,25 @@ def test_cors_configured(client):
 
 
 def test_lifespan_creates_tables(client):
-    # If tables were created, we should be able to query patients
     response = client.get("/api/patients")
     assert response.status_code == 200
+
+
+def test_healthz(client):
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "env" in data
+
+
+def test_healthz_db_error(client, monkeypatch):
+    from sqlalchemy.orm import Session
+
+    def broken_execute(self, *args, **kwargs):
+        raise RuntimeError("DB unavailable")
+
+    monkeypatch.setattr(Session, "execute", broken_execute)
+    response = client.get("/healthz")
+    assert response.status_code == 503
+    assert response.json()["status"] == "error"
