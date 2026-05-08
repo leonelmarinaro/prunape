@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { usePatients } from "../api/patients"
 import { Button } from "@/components/ui/button"
@@ -8,10 +7,7 @@ import { SkeletonTable } from "@/components/ui/SkeletonTable"
 export default function HomePage() {
   const { data: patients = [], isLoading, isError } = usePatients()
 
-  const recentPatients = useMemo(
-    () => [...patients].sort((a, b) => b.id - a.id).slice(0, 5),
-    [patients]
-  )
+  const recentPatients = [...patients].sort((a, b) => b.id - a.id).slice(0, 5)
 
   return (
     <div className="space-y-6">
@@ -81,6 +77,7 @@ export default function HomePage() {
               <li key={p.id} className="border-b border-[var(--border)] last:border-0">
                 <Link
                   to={`/patients/${p.id}`}
+                  aria-label={`Ver ficha de ${p.name}`}
                   className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors"
                 >
                   <AvatarInitials name={p.name} size="sm" />
